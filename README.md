@@ -83,3 +83,5 @@ TODO
 
 - More elaborate **testing** (particularly for highly degenerate
   inputs).
+
+- Special functions for two dimensions (i.e. **zonogons**).

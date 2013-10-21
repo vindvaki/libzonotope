@@ -65,8 +65,8 @@ def robust_region_naive(V, z = None):
 
 def zonotope_halfspaces(V, verbose=False):
     """
-    A proof of concept implementation that generates the Hrep of the zonotope
-    directly from the generators.
+    A proof of concept implementation that generates the
+    H-representation of the zonotope directly from the generators.
     """
 
     n, d = V.dimensions()
@@ -75,11 +75,11 @@ def zonotope_halfspaces(V, verbose=False):
 
     for U in Combinations(V, d-1):
         normal = Matrix(ZZ, U).transpose().integer_kernel().gen()
-        shift_vector = zero_vector(ZZ, d)
+        offset_vector = zero_vector(ZZ, d)
         for v in V:
             normal_proj = normal.dot_product(v)
             if normal_proj <= 0:
-                shift_vector += v
+                offset_vector += v
         
         # standardize the normal to the smallest integral vector representing
         # the same hyperplane
@@ -87,16 +87,16 @@ def zonotope_halfspaces(V, verbose=False):
         if standardizer > 0:
             normal /= standardizer
         
-        shift = - ( normal.dot_product(shift_vector) )
-        # { x : normal*x + shift >= 0 } is one of the halfspaces
+        offset = - ( normal.dot_product(offset_vector) )
+        # { x : normal*x + offset >= 0 } is one of the halfspaces
         
         # comptue the antipodal inequality
-        normal_antipode = -normal
-        shift_antipode = ( generator_sum.dot_product(normal) ) + shift
-        # { x: normal_antipode + shift_antipode >= 0 } is the antipodal halfspace
+        antipode_normal = -normal
+        antipode_offset = ( generator_sum.dot_product(normal) ) + offset
+        # { x: antipode_normal + antipode_offset >= 0 } is the antipodal halfspace
         
-        ieqs.add(tuple(shift) + tuple(normal))
-        ieqs.add(tuple(shift_antipode) + tuple(normal_antipode))
+        ieqs.add(tuple(offset) + tuple(normal))
+        ieqs.add(tuple(antipode_offset) + tuple(antipode_normal))
         
     if verbose == True:
         print "n={n}, d={d}, n_ieqs={n_ieqs}".format(\
@@ -187,17 +187,16 @@ def show_robust_region(z, V, alpha_baseline=0.6, **kwargs):
 
     return output
 
-
-if __name__ == '__main__':
-    # Set up a 2D demo zonotope. Works pretty much as expected.
+#if __name__ == '__main__':
+#    # Set up a 2D demo zonotope. Works pretty much as expected.
 #    V_2 = matrix(QQ, [[-1,1],[1,0], [1,-2], [2,3], [-0.3,-1]])
 #    z_2 = zonotope_from_vectors(V_2)
 #    r_2 = show_robust_region(z_2, V_2)
 #    r_2.save('robust_2.png', axes=False, figsize=40)
-    
-    # Set up a 3D demo zonotope. This is still broken -- the robust
-    # region graphics object doesn't seem to play well with the
-    # raytracer that Sage uses.
+#    
+#    # Set up a 3D demo zonotope. This is still broken -- the robust
+#    # region graphics object doesn't seem to play well with the
+#    # raytracer that Sage uses.
 #    V_3 = matrix(QQ, [[-1,1,1],[1,0,1], [1,-5,1], [2,3,-1], [1,-1,-1]])
 #    z_3 = zonotope_from_vectors(V_3)
 #    r_3 = show_robust_region(z_3, V_3, frame=False)
