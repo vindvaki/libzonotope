@@ -43,7 +43,7 @@ inline void standardize_vector<mpz_class> ( std::vector<mpz_class>& numbers )
 }
 
 /**
- * Standardize a vector of mpz_class rartionals.
+ * Standardize a vector of mpq_class rationals.
  *
  * @param numbers The vector of rationals
  * @post The vector has been reduced to the smallest co-directional integral vector.
