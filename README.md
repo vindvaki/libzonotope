@@ -7,6 +7,14 @@ manipulations. The most interesting functions are the generic C++
 algorithms implemented in the header files in the `include/`
 subdirectory of this project.
 
+A zonotope is a convex polytope that is the Minkowski sum of line
+segments. We write
+
+    Z(V) := [0,v_0] + ... + [0,v_{n-1}]
+
+for the Minkowski sum of the line segments `[0,v_i]`, `i=0..n-1`,
+where `V=[v_0 .. v_{n-1}]` is the `d×n` matrix with columns `v_i`, and
+`0` is the origin in `d` dimensions.
 
 
 Features
@@ -14,7 +22,9 @@ Features
 
 In its current state, the project should be considered no more a proof
 of concept. For more sophisticated vertex enumeration, we recommend
-[MinkSum][1].
+[MinkSum][1]. The main reason someone might use the library right now
+is its small size, and the control it gives over the components used
+in its algorithms.
 
 The main files are:
 
@@ -59,6 +69,17 @@ The main files are:
   manual stack management, for comparison with reverse search (it can
   be concluded that we need to improve our implementation of reverse
   search).
+  
+[1]: https://sites.google.com/site/christopheweibel/research/minksum
 
 
-[1] https://sites.google.com/site/christopheweibel/research/minksum
+TODO
+----
+
+- Put the library into a common **namespace**!
+
+- Create a **volume output functor** to use with the combination
+  traversal algorithm.
+
+- More elaborate **testing** (particularly for highly degenerate
+  inputs).
