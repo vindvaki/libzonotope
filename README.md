@@ -20,8 +20,8 @@ where `V=[v_0 .. v_{n-1}]` is the `d×n` matrix with columns `v_i`, and
 Features
 --------
 
-In its current state, the project should be considered no more a proof
-of concept. For more sophisticated vertex enumeration, we recommend
+In its current state, the project should be considered no more than a 
+proof of concept. For more sophisticated vertex enumeration, we recommend
 [MinkSum][1]. The main reason someone might use the library right now
 is its small size, and the control it gives over the components used
 in its algorithms.
