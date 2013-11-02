@@ -24,7 +24,10 @@ In its current state, the project should be considered no more than a
 proof of concept. For more sophisticated vertex enumeration, we recommend
 [MinkSum][1]. The main reason someone might use the library right now
 is its small size, and the control it gives over the components used
-in its algorithms.
+in its algorithms. We currently provide implementations that depend on the
+[linear programming solver][3] from [CGAL](http://cgal.org), but
+it's fairly easy to adapt the code to a different solver.
+
 
 The main files are:
 
@@ -56,13 +59,14 @@ The main files are:
   `Combination_kernel_container`).
   
 - `include/reverse_search.hpp`: Implements a completely generic
-  reverse search algorithm (using functors for adjacency checks and
-  local search).
+  [reverse search algorithm] by Avis and Fukuda,
+  using functors for adjacency checks and local search.
 
 - `include/cell_enum.hpp`: Implements the functors for reverse search
   to perform cell enumeration in arrangements, and a wrapper function
   that finds a root cell. By providing an appropriate output functor,
-  this can be used for vertex enumeration in zonotopes.
+  this can be used for vertex enumeration in zonotopes. This algorithm
+  is also from the [original reverse search paper by Avis and Fukuda][2].
 
 - `include/vertex_enum.hpp`: Implements vertex enumeration in
   zonotopes using depth-first-search in the dual arrangement with
@@ -71,7 +75,8 @@ The main files are:
   search).
   
 [1]: https://sites.google.com/site/christopheweibel/research/minksum
-
+[2]: http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.26.4487
+[3]: http://doc.cgal.org/latest/QP_solver/index.html
 
 TODO
 ----
@@ -85,3 +90,5 @@ TODO
   inputs).
 
 - Special functions for two dimensions (i.e. **zonogons**).
+
+- Implement `O(n^{d-1}\log{n})` general position vertex enumeration.
