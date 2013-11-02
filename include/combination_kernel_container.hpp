@@ -82,7 +82,8 @@ struct Combination_kernel_container {
     const int n = generators.size();
     const int k = elements.size();
     
-    return (n - (MAX_SIZE - k) + 1);
+    return n;
+    // return (n - (MAX_SIZE - k) + 1);
   }
 
   /**
