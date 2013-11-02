@@ -59,7 +59,7 @@ The main files are:
   `Combination_kernel_container`).
   
 - `include/reverse_search.hpp`: Implements a completely generic
-  [reverse search algorithm] by Avis and Fukuda,
+  [reverse search algorithm][2] by Avis and Fukuda,
   using functors for adjacency checks and local search.
 
 - `include/cell_enum.hpp`: Implements the functors for reverse search
@@ -92,3 +92,7 @@ TODO
 - Special functions for two dimensions (i.e. **zonogons**).
 
 - Implement `O(n^{d-1}\log{n})` general position vertex enumeration.
+
+- Forward a user-facing output functor to `handle_event_points` (by 
+  passing it through the zonotope output functor calling 
+  `handle_event_points`)
