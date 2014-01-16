@@ -17,7 +17,7 @@ CXXFLAGS = -Wall -Wextra -std=c++11 -O3
 #
 # Compilation targets
 # 
-TARGETS = main_cell_enum main_vertex_enum main_zonotope_halfspaces main_zonotope_halfspaces_iml
+TARGETS = main_cell_enum main_vertex_enum main_zonotope_halfspaces main_zonotope_halfspaces_iml main_zonotope_volume
 
 #
 # Rules
