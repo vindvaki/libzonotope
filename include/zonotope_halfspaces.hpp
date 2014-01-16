@@ -30,6 +30,10 @@ zonotope_halfspaces (const std::vector<std::vector<NT> >& generators) {
 
   traverse_combinations<Combination_container, Output_functor>
     (empty_combination, d-2, zonotope_halfspaces_output);
+  // we only traverse up to (d-2)-combinations because after that, the
+  // output functor takes over and traverses the
+  // (d-1)-child-combinations in a manner specific to the halfspace
+  // traversal.
   
   return zonotope_halfspaces_output.halfspaces;
 }
