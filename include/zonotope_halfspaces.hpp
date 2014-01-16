@@ -5,7 +5,6 @@
 #include "combination_traversal.hpp"
 #include "zonotope_halfspaces_output_functor.hpp"
 #include "combination_kernel_container.hpp"
-#include "combination_kernel_container_iml.hpp"
 
 #include <vector>
 #include <set>
