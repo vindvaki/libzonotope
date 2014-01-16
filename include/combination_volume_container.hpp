@@ -1,5 +1,5 @@
-#ifndef COMBINATION_KERNEL_CONTAINER_HPP_
-#define COMBINATION_KERNEL_CONTAINER_HPP_
+#ifndef COMBINATION_VOLUME_CONTAINER_HPP_
+#define COMBINATION_VOLUME_CONTAINER_HPP_
 
 
 #include "linalg.hpp"
@@ -8,11 +8,11 @@
 #include <vector>
 
 /**
- * @brief A combination container for incremental kernel updates
+ * @brief A combination container for incremental kernel and volume updates
  * 
  */
 template <typename NT>
-struct Combination_kernel_container {
+struct Combination_volume_container {
   /**
    * The generators of the zonotope
    */
@@ -33,13 +33,18 @@ struct Combination_kernel_container {
    * The kernel of generators[combination]
    */
   std::vector<std::vector<NT> > kernel;
-  
+
+  /**
+   * The absolute determinant of the square submatrix corresponding to the
+   * current combination
+   */
+  NT absolute_determinant;
 
   /**
    * @brief Construct an empty combination with room for up to
    *        MAX_SIZE elements.
    */
-  Combination_kernel_container( const std::vector<std::vector<NT> >& generators,
+  Combination_volume_container( const std::vector<std::vector<NT> >& generators,
                                 const int MAX_SIZE ) :
     generators( generators ),
     MAX_SIZE( MAX_SIZE )
@@ -61,7 +66,7 @@ struct Combination_kernel_container {
    */
   void extend(const int i) {
     elements.push_back(i);
-    update_kernel<NT> ( kernel, generators[i] );
+    absolute_determinant *= update_kernel<NT> ( kernel, generators[i] );
   }
 
   /**

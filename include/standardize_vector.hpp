@@ -5,7 +5,7 @@
 #include <gmpxx.h>
 
 template<typename Number_t>
-inline void standardize_vector ( std::vector<Number_t>& );
+inline Number_t standardize_vector ( std::vector<Number_t>& );
 
 /**
  * Standardize a vector of mpz_class integers.
@@ -14,7 +14,7 @@ inline void standardize_vector ( std::vector<Number_t>& );
  * @post The numbers vector has been reduced by the gcd of its entries
  */
 template<>
-inline void standardize_vector<mpz_class> ( std::vector<mpz_class>& numbers ) 
+inline mpz_class standardize_vector<mpz_class> ( std::vector<mpz_class>& numbers ) 
 {
   mpz_class a = numbers[0];
   for ( const mpz_class& b : numbers ) {
@@ -27,19 +27,20 @@ inline void standardize_vector<mpz_class> ( std::vector<mpz_class>& numbers )
     mpz_gcd ( a.get_mpz_t(), a.get_mpz_t(), b.get_mpz_t() );
     // a = gcd(a,b) > 0
     if ( a == 1 ) {
-      return;
+      return a;
     }
   }
   // a = gcd(numbers)
  
   if ( a == 0 ) {
     // NOTE: This is a degenerate case, where all the numbers are 0
-    return;
+    return -1;
   }
   for ( mpz_class& b : numbers ) { 
     b /= a;
   }
   // numbers = numbers / a
+  return a;
 }
 
 /**
@@ -49,7 +50,7 @@ inline void standardize_vector<mpz_class> ( std::vector<mpz_class>& numbers )
  * @post The vector has been reduced to the smallest co-directional integral vector.
  */
 template<>
-inline void standardize_vector<mpq_class>( std::vector<mpq_class>& numbers ) 
+inline mpq_class standardize_vector<mpq_class>( std::vector<mpq_class>& numbers ) 
 {
   mpz_class a = numbers[0].get_num();
   mpz_class b = numbers[0].get_den();
@@ -60,15 +61,18 @@ inline void standardize_vector<mpq_class>( std::vector<mpq_class>& numbers )
     mpz_lcm ( b.get_mpz_t(), b.get_mpz_t(), c.get_den_mpz_t() );
 
     if ( a == 1 && b == 1 ) {
-      return;
+      return a;
     }
   }
-
+  
   for ( mpq_class& c : numbers ) {
     c.get_num() /= a;
     c.get_num() *= (b / c.get_den());
     c.get_den() = 1;
   }
+  // numbers = numbers / (a / b)
+  
+  return (a / b);
 }
 
 #endif

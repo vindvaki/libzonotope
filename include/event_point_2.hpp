@@ -142,6 +142,8 @@ inline void handle_event_points (
 
         halfspaces.insert( h );
         halfspaces.insert( h_antipode );
+        // output(h);
+        // output(h_antipode);
       }
     }
   }

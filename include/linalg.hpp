@@ -25,31 +25,33 @@ inline NT dot( const std::vector<NT_a>& a, const std::vector<NT_b>& b )
 /**
  * @brief Update a kernel basis when a vector is added to a combination
  *
- * @param input_kernel the basis of the kernel to be restricted
+ * @param kernel the basis of the kernel to be restricted
  
  * @param v the vector to be added to the combination (used to
  *        restrict the kernel).
  *
- * @return A kernel for the extended combination. If v is already in
- *         the span of the combination, a copy of the input kernel is
- *         returned.
+ * @post kernel has been updated to account for the new vector. If v
+ *       is already in the span of the combination, then kernel
+ *       remains untouched.
+ * 
+ * @return A multiplicative delta for the absolute value of the
+ *         determinant.
  */
 
 template <typename NT>
-std::vector<std::vector<NT> > update_kernel( const std::vector<std::vector<NT> >& input_kernel,
-                                             const std::vector<NT>& v )
+const NT update_kernel( std::vector<std::vector<NT> >& kernel,
+                        const std::vector<NT>& v )
 {
   using std::vector;
   using std::swap;
 
-  const int d = input_kernel[0].size();
-  const int k = input_kernel.size();
-  vector<vector<NT> > output_kernel = input_kernel;
+  const int d = kernel[0].size();
+  const int k = kernel.size();
   
   vector<NT> x (k);
   int j = -1;
   for ( int i = 0; i < k; ++i ) {
-    x[i] = dot<NT> ( input_kernel[i], v );
+    x[i] = dot<NT> ( kernel[i], v );
     if ( x[i] != 0 ) {
       j = i;
     }
@@ -57,21 +59,23 @@ std::vector<std::vector<NT> > update_kernel( const std::vector<std::vector<NT> >
 
   if ( j == -1 ) {
     // v is already in the combination
-    return output_kernel;
+    return 1;
   }
 
-  swap(output_kernel[k-1], output_kernel[j]);
+  swap(kernel[k-1], kernel[j]);
   swap(x[k-1], x[j]);
+
+  NT absolute_determinant_delta = x[k-1];
   
   for ( int i = 0; i < k - 1; ++i ) {
     for ( int r = 0; r < d; ++r ) {
-      output_kernel[i][r] = x[k-1]*output_kernel[i][r] - x[i]*output_kernel[k-1][r];
+      kernel[i][r] = x[k-1]*kernel[i][r] - x[i]*kernel[k-1][r];
     }
-    standardize_vector ( output_kernel[i] );
+    absolute_determinant_delta *= standardize_vector ( kernel[i] );
   }
-  output_kernel.pop_back();
+  kernel.pop_back();
   
-  return output_kernel;
+  return absolute_determinant_delta;
 }
 
 #endif
