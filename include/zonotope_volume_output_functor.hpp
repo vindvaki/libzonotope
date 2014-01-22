@@ -5,7 +5,7 @@
 #include "event_point_2.hpp"
 
 #include <vector>
-#include <set>
+#include <iostream>
 
 
 template <typename NT, typename Combination_container>
@@ -28,7 +28,11 @@ struct Zonotope_volume_output_functor {
     using std::vector;
 
     if ( combination.size() == d ) {
-      volume += combination.absolute_determinant;
+      if ( combination.determinant > 0 ) {
+        volume += combination.determinant;
+      } else {
+        volume -= combination.determinant;
+      }
     }
   }
 };

@@ -23,7 +23,7 @@ int main() {
     NT volume = zonotope_volume<NT> (generators);
     cout << "n=" << n << " "
          << "d=" << d << " "
-         << "ieqs=" << volume << "\n";
+         << "volume=" << volume << "\n";
   }
 
  

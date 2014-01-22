@@ -1,5 +1,5 @@
-#ifndef COMBINATION_VOLUME_CONTAINER_HPP_
-#define COMBINATION_VOLUME_CONTAINER_HPP_
+#ifndef COMBINATION_INVERSE_CONTAINER_HPP_
+#define COMBINATION_INVERSE_CONTAINER_HPP_
 
 
 #include "linalg.hpp"
@@ -8,11 +8,11 @@
 #include <vector>
 
 /**
- * @brief A combination container for incremental kernel and volume updates
+ * @brief A combination container for incremental inverse and volume updates
  * 
  */
 template <typename NT>
-struct Combination_volume_container {
+struct Combination_inverse_container {
   /**
    * The generators of the zonotope
    */
@@ -30,32 +30,33 @@ struct Combination_volume_container {
   std::vector<int> elements;
 
   /**
-   * The kernel of generators[combination]
+   * The product of elementary row operation marices to diagonalize
+   * transpose(generators[combination])
    */
-  std::vector<std::vector<NT> > kernel;
+  std::vector<std::vector<NT> > inverse;
 
   /**
-   * The absolute determinant of the square submatrix corresponding to the
-   * current combination
+   * The value of 1 / det(inverse). When k = d,
+   * generators[combination] is a nonsingular d-by-d matrix and
+   * determinant = det(generators[combination])
    */
-  NT absolute_determinant;
+  NT determinant;
 
   /**
    * @brief Construct an empty combination with room for up to
    *        MAX_SIZE elements.
    */
-  Combination_volume_container( const std::vector<std::vector<NT> >& generators,
+  Combination_inverse_container( const std::vector<std::vector<NT> >& generators,
                                 const int MAX_SIZE ) :
     generators( generators ),
-    MAX_SIZE( MAX_SIZE )
+    MAX_SIZE( MAX_SIZE ),
+    determinant( 1 )
   {
     using std::vector;
-    
     const int d = generators[0].size();
-    
-    kernel = vector<vector<NT> > ( d, vector<NT>( d, 0 ) );
+    inverse = vector<vector<NT> > ( d, vector<NT>( d, 0 ) );
     for ( int i = 0; i < d; ++i ) {
-      kernel[i][i] = 1;
+      inverse[i][i] = 1;
     }
   }
 
@@ -65,8 +66,8 @@ struct Combination_volume_container {
    * @param i an integer in (top() + 1) .. neighbor_upper_bound()
    */
   void extend(const int i) {
+    update_inverse<NT> ( generators, elements, i, inverse, determinant );
     elements.push_back(i);
-    absolute_determinant *= update_kernel<NT> ( kernel, generators[i] );
   }
 
   /**
@@ -84,11 +85,7 @@ struct Combination_volume_container {
   }
 
   int neighbor_upper_bound() const {
-    const int n = generators.size();
-    const int k = elements.size();
-    
-    return n;
-    // return (n - (MAX_SIZE - k) + 1);
+    return generators.size();
   }
 
   /**
@@ -104,8 +101,7 @@ struct Combination_volume_container {
    * @brief true iff the combination is independent
    */
   bool is_valid() const {
-    const int d = generators[0].size();
-    return ( size() + kernel.size() == d );
+    return ( determinant != 0 );
   }
 
 };

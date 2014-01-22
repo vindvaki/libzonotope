@@ -4,7 +4,7 @@
 #include "hyperplane.hpp"
 #include "combination_traversal.hpp"
 #include "zonotope_volume_output_functor.hpp"
-#include "combination_volume_container.hpp"
+#include "combination_inverse_container.hpp"
 
 #include <vector>
 
@@ -16,7 +16,7 @@
  *                               combination
  */
 template <typename NT,
-          typename Combination_container = Combination_volume_container<NT> >
+          typename Combination_container = Combination_inverse_container<NT> >
 NT
 zonotope_volume (const std::vector<std::vector<NT> >& generators) {
 
