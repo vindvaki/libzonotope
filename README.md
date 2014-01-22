@@ -83,9 +83,6 @@ TODO
 
 - Put the library into a common **namespace**!
 
-- Create a **volume output functor** to use with the combination
-  traversal algorithm.
-
 - More elaborate **testing** (particularly for highly degenerate
   inputs).
 
