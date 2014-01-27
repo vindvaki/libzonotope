@@ -6,8 +6,11 @@
 #include "zonotope_halfspaces_output_functor.hpp"
 #include "combination_kernel_container.hpp"
 
+// External dependencies
 #include <vector>
 #include <set>
+#include <gmpxx.h>
+
 
 /**
  * @brief Generic construction of the set of halfspaces
@@ -16,7 +19,7 @@
  *                               maintains the kernel of the
  *                               combination
  */
-template <typename NT,
+template <typename NT = mpz_class,
           typename Combination_container = Combination_kernel_container<NT> >
 std::set<Hyperplane<NT> >
 zonotope_halfspaces (const std::vector<std::vector<NT> >& generators) {
@@ -25,7 +28,7 @@ zonotope_halfspaces (const std::vector<std::vector<NT> >& generators) {
 
   const int d = generators[0].size();
 
-  Combination_container empty_combination (generators, d-1);  
+  Combination_container empty_combination (generators, d-1);
   Output_functor zonotope_halfspaces_output (generators);
 
   traverse_combinations<Combination_container, Output_functor>

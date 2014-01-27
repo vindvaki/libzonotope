@@ -6,7 +6,11 @@
 #include "zonotope_volume_output_functor.hpp"
 #include "combination_inverse_container.hpp"
 
+// External dependencies
 #include <vector>
+#include <gmpxx.h>
+
+
 
 /**
  * @brief Generic construction of the set of halfspaces
@@ -15,7 +19,7 @@
  *                               maintains the kernel of the
  *                               combination
  */
-template <typename NT,
+template <typename NT = mpz_class,
           typename Combination_container = Combination_inverse_container<NT> >
 NT
 zonotope_volume (const std::vector<std::vector<NT> >& generators) {

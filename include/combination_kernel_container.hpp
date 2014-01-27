@@ -80,7 +80,7 @@ struct Combination_kernel_container {
 
   int neighbor_upper_bound() const {
     const int n = generators.size();
-    const int k = elements.size();
+    // const int k = elements.size();
     
     return n;
     // return (n - (MAX_SIZE - k) + 1);
