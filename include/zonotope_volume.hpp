@@ -36,5 +36,30 @@ zonotope_volume (const std::vector<std::vector<NT> >& generators) {
   
   return zonotope_volume_output.volume;
 }
+
+template <>
+long zonotope_volume (const std::vector<std::vector<long> >& generators) {
+  const int n = generators.size();
+  const int d = generators[0].size();
+
+  std::vector<std::vector<mpz_class> >
+    generators_mpz (n, std::vector<mpz_class> (d));
+
+  for ( int k = 0; k < n; ++k ) {
+    for ( int i = 0; i < d; ++i ) {
+      generators_mpz[k][i] = generators[k][i];
+    }
+  }
+  mpz_class volume_mpz = zonotope_volume<mpz_class> (generators_mpz);
+  
+  return volume_mpz.get_si();
+}
  
 #endif
+
+
+
+
+
+
+
