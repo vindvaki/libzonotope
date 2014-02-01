@@ -3,7 +3,6 @@
 
 #include <vector>
 
-
 //
 // TODO: Store a supporting combination along with the hyperplane
 //       (canonical if possible).

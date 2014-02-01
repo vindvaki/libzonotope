@@ -5,58 +5,51 @@
 #include "combination_traversal.hpp"
 #include "zonotope_volume_output_functor.hpp"
 #include "combination_inverse_container.hpp"
+#include "preprocess_generators.hpp"
+#include "type_casting_functor.hpp"
 
-// External dependencies
 #include <vector>
 #include <gmpxx.h>
+#include <cmath>
 
-
-
-/**
- * @brief Generic construction of the set of halfspaces
- *
- * @tparam Combination_container A combination container that also
- *                               maintains the kernel of the
- *                               combination
- */
-template <typename NT = mpz_class,
-          typename Combination_container = Combination_inverse_container<NT> >
-NT
-zonotope_volume (const std::vector<std::vector<NT> >& generators) {
-
-  typedef Zonotope_volume_output_functor<NT, Combination_container> Output_functor;
-
-  const int d = generators[0].size();
-
-  Combination_container empty_combination (generators, d);
-  Output_functor zonotope_volume_output (generators);
-
-  traverse_combinations<Combination_container, Output_functor>
-    (empty_combination, d, zonotope_volume_output);
-  
-  return zonotope_volume_output.volume;
-}
+template <typename T>
+T _pow(const T& x, unsigned int n) {}
 
 template <>
-long zonotope_volume (const std::vector<std::vector<long> >& generators) {
-  const int n = generators.size();
+mpz_class _pow<mpz_class>(const mpz_class& x, unsigned int n) {
+  mpz_class y;
+  mpz_pow_ui(y.get_mpz_t(), x.get_mpz_t(), n);
+  return y;
+}
+
+template <typename User_number_t = mpz_class,
+          typename Internal_number_t = mpz_class>
+User_number_t zonotope_volume (const std::vector<std::vector<User_number_t> >& generators) {
+
+  typedef Combination_inverse_container<Internal_number_t > Combination_container_t;
+  typedef Zonotope_volume_output_functor<Internal_number_t, Combination_container_t> Output_functor_t;
+  Type_casting_functor<Internal_number_t, User_number_t> Cast_to_user_type;
+
   const int d = generators[0].size();
 
-  std::vector<std::vector<mpz_class> >
-    generators_mpz (n, std::vector<mpz_class> (d));
+  std::vector<std::vector<Internal_number_t> > internal_generators;
+  Internal_number_t scaling_factor;
+  preprocess_generators(generators, internal_generators, scaling_factor);
 
-  for ( int k = 0; k < n; ++k ) {
-    for ( int i = 0; i < d; ++i ) {
-      generators_mpz[k][i] = generators[k][i];
-    }
-  }
-  mpz_class volume_mpz = zonotope_volume<mpz_class> (generators_mpz);
+  Combination_container_t empty_combination (internal_generators, d);
+  Output_functor_t zonotope_volume_output (internal_generators);
+
+  traverse_combinations<Combination_container_t, Output_functor_t>
+    (empty_combination, d, zonotope_volume_output);
+
+  User_number_t volume = Cast_to_user_type(zonotope_volume_output.volume);
+  scaling_factor = _pow<Internal_number_t> (scaling_factor, d);
+  volume /= Cast_to_user_type(scaling_factor);
   
-  return volume_mpz.get_si();
+  return volume;
 }
  
-#endif
-
+#endif // ZONOTOPE_VOLUME_HPP_
 
 
 

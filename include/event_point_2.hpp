@@ -50,7 +50,7 @@ struct Event_point_2 {
 template <typename Number_t,
           typename Vector_t,
           typename Generator_container,
-          typename Halfspaces_container,
+          typename Halfspaces_output_functor,
           typename Combination_container>
 inline void handle_event_points (
   const int largest_index,
@@ -59,7 +59,7 @@ inline void handle_event_points (
   const Vector_t& c1,
   const Generator_container& generators,
   const Vector_t& generator_sum,
-  Halfspaces_container& halfspaces )
+  Halfspaces_output_functor& output_fn )
 {
   using std::vector;
   
@@ -140,10 +140,8 @@ inline void handle_event_points (
         }
         h_antipode.offset += h.offset;
 
-        halfspaces.insert( h );
-        halfspaces.insert( h_antipode );
-        // output(h);
-        // output(h_antipode);
+        output_fn( h );
+        output_fn( h_antipode );
       }
     }
   }
