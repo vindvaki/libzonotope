@@ -1,18 +1,17 @@
-from ctypes import *
-from ctypes.util import find_library
+import ctypes as _ctypes
 
-libzonotope_cdll = CDLL('libzonotope_c.so')
+_libzonotope_cdll = _ctypes.CDLL('libzonotope_c.so')
 
 #
 # Lookup tables for dynamic typing
 #
 
-cdll_zonotope_volume_fn = {
-    c_long: libzonotope_cdll.zonotope_volume_long
+_cdll_zonotope_volume_fn = {
+    _ctypes.c_long: _libzonotope_cdll.zonotope_volume_long
 }
 
-cdll_zonotope_halfspaces_fn = {
-    c_long: libzonotope_cdll.zonotope_halfspaces_long
+_cdll_zonotope_halfspaces_fn = {
+    _ctypes.c_long: _libzonotope_cdll.zonotope_halfspaces_long
 }
 
 #
@@ -26,15 +25,15 @@ def _dimensions(generators):
         n, d = generators.dimensions()
         return d, n
 
-def _flatten_to_ctypes_array(generators, T=c_long):
+def _flatten_to_ctypes_array(generators, T=_ctypes.c_long):
     """
-    Flatten generators to a ctypes array of type T
+    Flatten generators to a _ctypes array of type T
     """
     d, n = _dimensions(generators)
-    _generators = [x for column in generators for x in column]
-    _generators = [x for x in _generators]
-    _generators = (T * (n*d))(*_generators)
-    return _generators
+    generators_arr = [x for column in generators for x in column]
+    generators_arr = [x for x in generators_arr]
+    generators_arr = (T * (n*d))(*generators_arr)
+    return generators_arr
 
 def _array_to_2d_list(d, n, arr):
     """
@@ -46,28 +45,28 @@ def _array_to_2d_list(d, n, arr):
 # Exported interface
 #
 
-def zonotope_volume(generators, T=c_long):
+def zonotope_volume(generators, T=_ctypes.c_long):
     d, n = _dimensions(generators)
-    _generators = _flatten_to_ctypes_array(generators)
-    return cdll_zonotope_volume_fn[T](d, n, _generators)
+    generators_arr = _flatten_to_ctypes_array(generators)
+    return _cdll_zonotope_volume_fn[T](d, n, generators_arr)
 
-def zonotope_halfspaces(generators, T=c_long):
+def zonotope_halfspaces(generators, T=_ctypes.c_long):
     """
     Return a generator to the list of halfspaces of the zonotope
     """
     d, n = _dimensions(generators)
     print d,n
     
-    # set up for ctypes function call
-    _generators = _flatten_to_ctypes_array(generators)
-    _halfspaces = POINTER(T)()
-    cdll_zonotope_halfspaces_fn[T].argtypes = [c_int, c_int, POINTER(c_long), POINTER(POINTER(T))]
+    # set up for _ctypes function call
+    generators_arr = _flatten_to_ctypes_array(generators)
+    halfspaces_arr = _ctypes.POINTER(T)()
+    _cdll_zonotope_halfspaces_fn[T].argtypes = [_ctypes.c_int, _ctypes.c_int, _ctypes.POINTER(_ctypes.c_long), _ctypes.POINTER(_ctypes.POINTER(T))]
 
     # obtain and format result
-    num_halfspaces = cdll_zonotope_halfspaces_fn[T](d, n, _generators, byref(_halfspaces))
-    halfspaces = _array_to_2d_list(d+1, num_halfspaces, _halfspaces)
+    num_halfspaces = _cdll_zonotope_halfspaces_fn[T](d, n, generators_arr, _ctypes.byref(halfspaces_arr))
+    halfspaces = _array_to_2d_list(d+1, num_halfspaces, halfspaces_arr)
 
     # clean up (to avoid memory leaks)
-    libzonotope_cdll.free(_halfspaces)
+    _libzonotope_cdll.free(halfspaces_arr)
 
     return halfspaces
