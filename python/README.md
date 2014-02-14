@@ -12,17 +12,22 @@ Installation
 The module can be installed globally using
 [Distutils](http://docs.python.org/distutils/):
 
-    python setup.py install
+```bash
+python setup.py install
+```
 
 or using [pip](http://www.pip-installer.org/):
 
-    pip install -e .
+```bash
+pip install -e .
+```
 
 from this directory. The latter also provides an easy way to uninstall
 by running
 
-    pip uninstall zonotope
-
+```bash
+pip uninstall zonotope
+```
 
 
 Usage
@@ -30,6 +35,8 @@ Usage
 
 For more information, see [zonotope.py](zonotope.py), or run
 
-    help('zonotope')
+```python
+help('zonotope')
+```
 
 in your python interpreter.
