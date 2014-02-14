@@ -6,6 +6,15 @@
 #include <cassert>
 #include <gmpxx.h>
 
+/**
+ * Here we define a a utility functor for type-safe conversion between
+ * "compatible" types (like integer -> fraction, or integer_type_a ->
+ * integer_type_b). Internally, this is (for example) used to convert
+ * from arbitrary precision (provided by gmp) to built in fixed
+ * precision types. Adding support for other types is as easy as
+ * providing a new specialization of the templated interface.
+ */
+
 template <typename Input_t, typename Output_t>
 struct Type_casting_functor {
   Output_t operator() (const Input_t& val) const {
