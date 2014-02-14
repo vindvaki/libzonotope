@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include <iostream>
+#include <utility>
 
 /**
  * @brief The dot product of two vectors.
@@ -38,8 +39,7 @@ inline NT dot( const std::vector<NT_a>& a, const std::vector<NT_b>& b )
  */
 
 template <typename NT>
-void update_kernel( std::vector<std::vector<NT> >& kernel,
-                        const std::vector<NT>& v )
+void update_kernel( std::vector<std::vector<NT> >& kernel, const std::vector<NT>& v )
 {
   using std::vector;
   using std::swap;
