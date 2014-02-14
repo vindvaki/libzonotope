@@ -25,6 +25,16 @@ void preprocess_generators (
   }
 }
 
+template <typename User_number_t,
+          typename Internal_number_t>
+void preprocess_generators (
+  const std::vector<std::vector<User_number_t> >& generators_in,
+  std::vector<std::vector<Internal_number_t> >& generators_out)
+{
+  Internal_number_t scaling_factor;
+  preprocess_generators(generators_in, generators_out, scaling_factor);
+}
+
 template <>
 void
 preprocess_generators<mpq_class, mpz_class> (
