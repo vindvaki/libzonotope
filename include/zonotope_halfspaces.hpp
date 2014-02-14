@@ -12,7 +12,6 @@
 #include <set>
 #include <gmpxx.h>
 
-
 /**
  * @brief Generic construction of the set of halfspaces
  *
@@ -37,14 +36,11 @@ void zonotope_halfspaces (
                                              Container_output_functor_t> Traversal_output_functor_t;
 
   const int d = generators_in[0].size();
-  const int n = generators_in.size();
 
   std::vector<std::vector<Internal_number_t> > internal_generators;
-  mpz_class generator_scaling_factor;
   
   preprocess_generators<User_number_t, Internal_number_t> (generators_in,
-                                                           internal_generators,
-                                                           generator_scaling_factor);
+                                                           internal_generators);
   
   Combination_container_t empty_combination (internal_generators, d-1);
 
