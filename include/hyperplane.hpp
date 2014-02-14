@@ -3,12 +3,6 @@
 
 #include <vector>
 
-//
-// TODO: Store a supporting combination along with the hyperplane
-//       (canonical if possible).
-// 
-
-
 /**
  * Represents a "hyperplane pair" `(normal, offset)`, where `normal` is
  * a vector and `offset` is a number. It is a utility class with
@@ -21,12 +15,14 @@
  * `(offset==1)`, then we have a one-to-one representation of halfspaces
  * in the given dimension.
  */
-template <typename Number_t>
+template <typename Number_t,
+          typename Vector_t = std::vector<Number_t> >
 struct Hyperplane {
-  
-  typedef std::vector<Number_t> Vector_t;
+
   Number_t offset;
   Vector_t normal;
+
+  std::vector<int> combination;
   
   /**
    * @brief Construct the trivial hyperplane in d dimensions

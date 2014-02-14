@@ -51,10 +51,10 @@ template <typename Number_t,
           typename Vector_t,
           typename Generator_container,
           typename Halfspaces_output_functor,
-          typename Combination_container>
+          typename Hyperplane_t = Hyperplane<Number_t> >
 inline void handle_event_points (
   const int largest_index,
-  const Combination_container& current_combination,
+  const std::vector<int>& current_combination,
   const Vector_t& c0,
   const Vector_t& c1,
   const Generator_container& generators,
@@ -62,7 +62,7 @@ inline void handle_event_points (
   Halfspaces_output_functor& output_fn )
 {
   using std::vector;
-  
+
   const int n = generators.size();
   const int d = generators[0].size();
 
@@ -72,9 +72,17 @@ inline void handle_event_points (
   // The event points in the plane spanned by c0, c1
   vector<Event_point_2<Number_t> > event_points;
 
+
+  // construct a boolean map of the combination for faster
+  // membership lookup
+  vector<bool> is_elem(n, false);
+  for ( int i : current_combination ) {
+    is_elem[i] = true;
+  }
+
   // Generate the event points
   for ( int i = 0; i < n; ++i ) {
-    if ( current_combination[i] ) {
+    if ( is_elem[i] ) {
       // i is in the current combination, so it generators[i] projects to the
       // origin in the plane spanned by c0, c1.
       continue;
@@ -125,8 +133,8 @@ inline void handle_event_points (
         // (current_combination, event.i) is a new combination, so we must
         // consider its pair of inequalities
 
-        Hyperplane<Number_t> h(d);
-        Hyperplane<Number_t> h_antipode(d);
+        Hyperplane_t h(d);
+        Hyperplane_t h_antipode(d);
 
         for ( int r = 0; r < d; ++r ) {
           h.normal[r] = -event.y * c0[r] + event.x * c1[r] ;
@@ -139,6 +147,10 @@ inline void handle_event_points (
           h_antipode.offset += h.normal[r] * generator_sum[r];
         }
         h_antipode.offset += h.offset;
+
+        h.combination = current_combination;
+        h.combination.push_back( event.i );
+        h_antipode.combination = h.combination;
 
         output_fn( h );
         output_fn( h_antipode );
