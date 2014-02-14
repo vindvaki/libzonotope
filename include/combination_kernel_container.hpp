@@ -1,7 +1,6 @@
 #ifndef COMBINATION_KERNEL_CONTAINER_HPP_
 #define COMBINATION_KERNEL_CONTAINER_HPP_
 
-
 #include "linalg.hpp"
 
 #include <algorithm>
@@ -104,7 +103,5 @@ struct Combination_kernel_container {
   }
 
 };
-
-
 
 #endif
