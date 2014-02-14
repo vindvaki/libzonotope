@@ -60,10 +60,14 @@ def zonotope_halfspaces(generators, T=_ctypes.c_long):
     # set up for _ctypes function call
     generators_arr = _flatten_to_ctypes_array(generators)
     halfspaces_arr = _ctypes.POINTER(T)()
-    _cdll_zonotope_halfspaces_fn[T].argtypes = [_ctypes.c_int, _ctypes.c_int, _ctypes.POINTER(_ctypes.c_long), _ctypes.POINTER(_ctypes.POINTER(T))]
+    _cdll_zonotope_halfspaces_fn[T].argtypes = [_ctypes.c_int,
+                                                _ctypes.c_int,
+                                                _ctypes.POINTER(_ctypes.c_long),
+                                                _ctypes.POINTER(_ctypes.POINTER(T))]
 
     # obtain and format result
-    num_halfspaces = _cdll_zonotope_halfspaces_fn[T](d, n, generators_arr, _ctypes.byref(halfspaces_arr))
+    num_halfspaces = _cdll_zonotope_halfspaces_fn[T](d, n, generators_arr,
+                                                     _ctypes.byref(halfspaces_arr))
     halfspaces = _array_to_2d_list(d+1, num_halfspaces, halfspaces_arr)
 
     # clean up (to avoid memory leaks)
