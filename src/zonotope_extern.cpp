@@ -1,5 +1,7 @@
-#include "../include/zonotope_volume.hpp"
-#include "../include/zonotope_halfspaces.hpp"
+#include "zonotope_volume.hpp"
+#include "zonotope_halfspaces.hpp"
+
+#include <cstdlib>
 
 
 /**
@@ -47,22 +49,22 @@ extern "C" {
     return zonotope_volume(_generators);
   }
 
-  long* zonotope_halfspaces_long(int d, int n, long* generators) {
+  long zonotope_halfspaces_long(int d, int n, long* generators, long** halfspaces) {
     std::vector<std::vector<long> > _generators;
     array_to_matrix_2(n, d, true, generators, _generators);
     std::set<Hyperplane<long> > _halfspaces;
     zonotope_halfspaces(_generators, _halfspaces);
     
-    long* halfspaces = new long[(d+1) * _halfspaces.size()];
+    (*halfspaces) = (long*)malloc(sizeof(long) * (d+1) * _halfspaces.size());
 
     std::set<Hyperplane<long> >::size_type count = 0;
     for ( const Hyperplane<long>& h : _halfspaces ) {
-      halfspaces[count++] = h.offset;
+      (*halfspaces)[count++] = h.offset;
       for ( int i = 0; i < d; ++i ) {
-        halfspaces[count++] = h.normal[i];
+        (*halfspaces)[count++] = h.normal[i];
       }
     }
     
-    return halfspaces;
+    return _halfspaces.size();
   }
 }
