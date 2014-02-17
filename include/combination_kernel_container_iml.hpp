@@ -10,6 +10,8 @@
 #include <iml.h>
 #include <cassert>
 
+namespace zonotope {
+
 /**
  * @brief A combination container using IML for kernel computations
  * 
@@ -152,5 +154,7 @@ struct Combination_kernel_container_IML {
     return ( size() + kernel.size() == d );
   }
 };
+
+} // namespace zonotope
 
 #endif

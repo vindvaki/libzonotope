@@ -9,6 +9,8 @@
 #include <cassert>
 #include <vector>
 
+namespace zonotope {
+
 template <typename NT,
           typename Combination_container,
           typename Halfspaces_container_output_functor>
@@ -60,5 +62,7 @@ struct Zonotope_halfspaces_output_functor
     }
   }
 };
+
+} // namespace zonotope
 
 #endif

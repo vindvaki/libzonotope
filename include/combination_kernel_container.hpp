@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <vector>
 
+namespace zonotope {
+
 /**
  * @brief A combination container for incremental kernel updates
  * 
@@ -103,5 +105,7 @@ struct Combination_kernel_container {
   }
 
 };
+
+} // namespace zonotope
 
 #endif

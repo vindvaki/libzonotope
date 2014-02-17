@@ -4,6 +4,18 @@
 #include <gmpxx.h>
 #include <vector>
 
+namespace zonotope {
+
+/**
+ * Converts the generator matrix from a user facing type to an internal number
+ * type. The internal number type should be integral, and the conversion should
+ * be of the form
+ *
+ *     generators_out = cast(scaling_factor * generators_in)
+ *
+ * with scaling_factor as small as possible.
+ *
+ */
 template <typename User_number_t,
           typename Internal_number_t>
 void preprocess_generators (
@@ -66,5 +78,7 @@ preprocess_generators<mpq_class, mpz_class> (
 
   scaling_factor = generators_den_lcm;
 }
+
+} // namespace zonotope
 
 #endif // PREPROCESS_GENERATORS_HPP_

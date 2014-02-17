@@ -7,6 +7,8 @@
 #include <algorithm>
 #include <vector>
 
+namespace zonotope {
+
 /**
  * @brief A combination container for incremental inverse and volume updates
  * 
@@ -106,6 +108,6 @@ struct Combination_inverse_container {
 
 };
 
-
+} // namespace zonotope
 
 #endif

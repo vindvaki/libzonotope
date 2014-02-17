@@ -22,6 +22,8 @@
 
 // TODO: Make sure that we have the correct vertices for sum([0,v] : v in V)
 
+namespace zonotope {
+
 using std::vector;
 using std::set;
 using std::stack;
@@ -174,5 +176,6 @@ struct Zonotope_vertex_enumerator {
   }
 };
 
+} // namespace zonotope
 
 #endif

@@ -1,6 +1,8 @@
 #ifndef CONTAINER_OUTPUT_FUNCTOR_HPP_
 #define CONTAINER_OUTPUT_FUNCTOR_HPP_
 
+namespace zonotope {
+
 template <typename Container_t, typename Input_t, typename Output_t = Input_t>
 struct Container_output_functor {
   Container_t& data;
@@ -12,5 +14,7 @@ struct Container_output_functor {
     data.insert( Cast_type(val) );
   }
 };
+
+} // namespace zonotope
 
 #endif // CONTAINER_OUTPUT_FUNCTOR_HPP_

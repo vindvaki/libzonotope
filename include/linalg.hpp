@@ -10,6 +10,8 @@
 #include <iostream>
 #include <utility>
 
+namespace zonotope {
+
 /**
  * @brief The dot product of two vectors.
  */
@@ -150,5 +152,7 @@ void update_inverse( const std::vector<std::vector<NT> >& generators,
     determinant *= -1;
   }
 }
+
+} // namespace zonotope
 
 #endif // LINALG_HPP_

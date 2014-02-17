@@ -1,12 +1,10 @@
 #ifndef ZONOTOPE_VOLUME_OUTPUT_FUNCTOR_HPP_
 #define ZONOTOPE_VOLUME_OUTPUT_FUNCTOR_HPP_
 
-#include "hyperplane.hpp"
-#include "event_point_2.hpp"
-
 #include <vector>
 #include <iostream>
 
+namespace zonotope {
 
 template <typename NT, typename Combination_container>
 struct Zonotope_volume_output_functor {
@@ -36,5 +34,7 @@ struct Zonotope_volume_output_functor {
     }
   }
 };
+
+} // namespace zonotope
 
 #endif

@@ -1,8 +1,8 @@
 #ifndef ZONOTOPE_HALFSPACES_HPP_
 #define ZONOTOPE_HALFSPACES_HPP_
 
-#include "hyperplane.hpp"
 #include "combination_traversal.hpp"
+#include "hyperplane.hpp"
 #include "zonotope_halfspaces_output_functor.hpp"
 #include "combination_kernel_container.hpp"
 #include "preprocess_generators.hpp"
@@ -11,6 +11,8 @@
 #include <vector>
 #include <set>
 #include <gmpxx.h>
+
+namespace zonotope {
 
 /**
  * @brief Generic construction of the set of halfspaces
@@ -53,5 +55,7 @@ void zonotope_halfspaces (
   // Traversal_output_fn takes over and traverses the (d-1)-child-combinations
   // in a manner specific to the halfspace traversal.
 }
+
+} // namespace zonotope
 
 #endif // ZONOTOPE_HALFSPACES_HPP_

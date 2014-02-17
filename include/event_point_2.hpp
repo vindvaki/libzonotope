@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <vector>
 
+namespace zonotope {
 
 /**
  * @brief A structure to order vectors in the plane by angle around the origin.
@@ -158,5 +159,7 @@ inline void handle_event_points (
     }
   }
 }
+
+} // namespace zonotope
 
 #endif

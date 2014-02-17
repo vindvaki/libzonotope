@@ -1,8 +1,6 @@
 #ifndef COMBINATION_TRAVERSAL_HPP_
 #define COMBINATION_TRAVERSAL_HPP_
 
-#include "linalg.hpp"
-
 #include <algorithm>
 #include <vector>
 

@@ -1,7 +1,6 @@
 #ifndef ZONOTOPE_VOLUME_HPP_
 #define ZONOTOPE_VOLUME_HPP_
 
-#include "hyperplane.hpp"
 #include "combination_traversal.hpp"
 #include "zonotope_volume_output_functor.hpp"
 #include "combination_inverse_container.hpp"
@@ -11,6 +10,8 @@
 #include <vector>
 #include <gmpxx.h>
 #include <cmath>
+
+namespace zonotope {
 
 template <typename T>
 T _pow(const T& x, unsigned int n) {}
@@ -48,6 +49,8 @@ User_number_t zonotope_volume (const std::vector<std::vector<User_number_t> >& g
   
   return volume;
 }
+
+} // namespace zonotope
  
 #endif // ZONOTOPE_VOLUME_HPP_
 

@@ -11,9 +11,9 @@
 typedef long Input_number_t;
 typedef CGAL::Gmpzf Exact_number_t;
 
-using namespace std;
-
 int main() {
+  using namespace std;
+  using namespace zonotope;
 
   int n_tests;
   cin >> n_tests;
@@ -28,6 +28,7 @@ int main() {
     }
 
     Zonotope_vertex_enumerator<Input_number_t, Exact_number_t> z (generators);
+
     cout << n << " " << d << " " << z.vertices.size() << "\n";
   }
 

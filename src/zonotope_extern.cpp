@@ -44,12 +44,16 @@ static void array_to_matrix_2(const int m,
 
 extern "C" {
   long zonotope_volume_long(int d, int n, long* generators) {
+    using namespace zonotope;
+    
     std::vector<std::vector<long> > _generators;
     array_to_matrix_2(n, d, true, generators, _generators);
     return zonotope_volume(_generators);
   }
 
   long zonotope_halfspaces_long(int d, int n, long* generators, long** halfspaces) {
+    using namespace zonotope;
+    
     std::vector<std::vector<long> > _generators;
     array_to_matrix_2(n, d, true, generators, _generators);
     std::set<Hyperplane<long> > _halfspaces;
