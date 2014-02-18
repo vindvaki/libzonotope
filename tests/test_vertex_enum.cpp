@@ -1,35 +1,36 @@
 #include "vertex_enum.hpp"
+#include "zonotope_vertex_adjacency_oracle_CGAL.hpp"
 
 #include <vector>
 #include <set>
 #include <list>
-
 #include <iostream>
 
 #include <CGAL/Gmpzf.h>
 
-typedef long Input_number_t;
-typedef CGAL::Gmpzf Exact_number_t;
-
 int main() {
   using namespace std;
   using namespace zonotope;
+
+  typedef Zonotope_vertex_adjacency_oracle_CGAL<long, CGAL::Gmpzf>
+      Adjacency_oracle_t;
 
   int n_tests;
   cin >> n_tests;
   for ( int t = 0; t < n_tests; ++t ) {
     int n, d;
     cin >> n >> d;
-    vector<vector<Input_number_t> > generators (n, vector<Input_number_t> (d, Input_number_t(0)));
+    vector<vector<long> > generators (n, vector<long> (d));
     for ( int i = 0; i < n; ++i ) {
       for ( int j = 0; j < d; ++j ) {
         cin >> generators[i][j];
       }
     }
 
-    Zonotope_vertex_enumerator<Input_number_t, Exact_number_t> z (generators);
+    vector<vector<long> > vertices =
+        zonotope_vertices<long, Adjacency_oracle_t > (generators);
 
-    cout << n << " " << d << " " << z.vertices.size() << "\n";
+    cout << n << " " << d << " " << vertices.size() << "\n";
   }
 
   return 0;

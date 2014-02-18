@@ -8,8 +8,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
 include_directories(include)
 
-file( GLOB_RECURSE my_headers include/*.hpp )
-add_custom_target( libzonotope SOURCES ${my_headers} )
+file( GLOB_RECURSE LIBZONOTOPE_HPP include/*.hpp )
+file( GLOB LIBZONOTOPE_PY python/*.py )
+add_custom_target( libzonotope_headers SOURCES ${LIBZONOTOPE_HPP} )
+add_custom_target( libzonotope_python  SOURCES ${LIBZONOTOPE_PY} )
 
 #
 # target subdirectories
