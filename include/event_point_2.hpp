@@ -33,16 +33,40 @@ struct Event_point_2 {
    *  Compare two event points by angle in `[0, 2*pi)`
    */
   inline bool operator< ( const Event_point_2<Number_t>& other ) const {
-    if ( y >= 0 && other.y <= 0 ) {
+
+    if ( y == 0 ) {
+      if ( other.y == 0 ) {
+        return x >= 0;
+      }
+      
+      if ( x >= 0 ) {
+        return true;
+      }
+      // x < 0
+
+      return other.y < 0;
+    }
+    // y != 0
+
+    if ( other.y == 0 ) {
+      if ( other.x >= 0 ) {
+        return false;
+      }
+      // other.x < 0
+      return y > 0;
+    }
+    // other.y != 0    
+
+    if ( y > 0 && other.y < 0 ) {
       return true;
     }
-    if ( y <= 0 && other.y >= 0 ) {
+    if ( y < 0 && other.y > 0 ) {
       return false;
     }
-
     // both points lie on the same side of the x-axis
     return y * other.x < x * other.y ;
   }
+
 };
 
 /**
@@ -98,7 +122,7 @@ inline void handle_event_points (
       event_points.push_back( Event_point_2<Number_t> ( i, x, y ) );
       event_points.push_back( Event_point_2<Number_t> ( -i - 1, -x, -y ) );
 
-      if ( y <= 0 ) {
+      if ( y < 0 || ( y == 0 && x < 0 ) ) {
         // v = generators[i] is below the x-axis
         for ( int r = 0; r < d; ++r ) {
           offset_vector[r] += v[r];
@@ -114,10 +138,8 @@ inline void handle_event_points (
   // Rotate a halfplane in counterclockwise order round the origin
   // The initial halfplane is everything below the x-axis, and offset_vector
   // is the sum of those generators.
-  for ( typename vector<Event_point_2<Number_t> >::const_iterator event_it = event_points.begin();
-        event_it != event_points.end();
-        ++event_it ) {
-    const Event_point_2<Number_t>& event = *event_it;
+  for ( const auto& event : event_points ) {
+//    std::cout << event.x << " " << event.y << std::endl;
 
     if ( event.i < 0 ) {
       // a generator has just left the halfplane
