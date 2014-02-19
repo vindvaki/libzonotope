@@ -3,7 +3,9 @@
 
 #include <algorithm>
 #include <vector>
+#include <iostream>
 
+namespace zonotope {
 
 /**
  * @brief A generic depth-first combination traversal algorithm.
@@ -47,5 +49,6 @@ void traverse_combinations (const Combination_container& current_combination,
   }
 }
 
+} // namespace zonotope
 
 #endif
