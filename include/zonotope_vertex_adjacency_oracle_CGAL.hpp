@@ -2,6 +2,7 @@
 #define ZONOTOPE_VERTEX_ADJACENCY_ORACLE_CGAL_HPP_
 
 #include <vector>
+#include <utility>
 
 // CGAL LP solver
 #include <CGAL/basic.h>
@@ -15,7 +16,8 @@ struct Zonotope_vertex_adjacency_oracle_CGAL {
 
   typedef std::vector<bool> Cell_t;
   typedef std::vector<Input_number_t> Vector_t;
-  typedef std::vector<Vector_t> Generator_container_t;
+  typedef std::pair<Vector_t, Vector_t> Segment_t;
+  typedef std::vector<Segment_t> Generator_container_t;
 
   const Generator_container_t& generators_;
   const int d_;
@@ -23,7 +25,7 @@ struct Zonotope_vertex_adjacency_oracle_CGAL {
 
   Zonotope_vertex_adjacency_oracle_CGAL(const Generator_container_t& generators) :
     generators_(generators),
-    d_(generators[0].size()),
+    d_(generators[0].first.size()),
     n_(generators.size()) {}
 
   bool operator() (const Cell_t& sign_vector, const int k) const {
@@ -41,9 +43,9 @@ struct Zonotope_vertex_adjacency_oracle_CGAL {
       if ( i != k ) {
         for ( int j = 0; j < d_; ++j ) {
           if ( sign_vector[i] ) {
-            lp.set_a(i, j, generators_[i][j]);
+            lp.set_a(i, j, generators_[i].first[j]);
           } else {
-            lp.set_a(i, j, -generators_[i][j]);
+            lp.set_a(i, j, -generators_[i].first[j]);
           }
         }
         // else {
@@ -57,9 +59,9 @@ struct Zonotope_vertex_adjacency_oracle_CGAL {
     }
     for ( int j = 0; j < d_; ++j ) {
       if ( sign_vector[k] ) {
-        lp.set_b(j, generators_[k][j]);
+        lp.set_b(j, generators_[k].first[j]);
       } else {
-        lp.set_b(j, -generators_[k][j]);
+        lp.set_b(j, -generators_[k].first[j]);
       }
     }
 

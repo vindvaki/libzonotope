@@ -31,9 +31,11 @@ struct Sign_flip_functor {
   {
     for ( int j = 0; j < adj_.d_; ++j ) {
       if ( sign_vector[k] ) {
-        v[j] -= adj_.generators_[k][j];
+        v[j] -= adj_.generators_[k].first[j];
+        v[j] += adj_.generators_[k].second[j];
       } else {
-        v[j] += adj_.generators_[k][j];
+        v[j] += adj_.generators_[k].first[j];
+        v[j] -= adj_.generators_[k].second[j];
       }
     }
     sign_vector[k] = ( ! sign_vector[k] );
@@ -113,12 +115,93 @@ std::vector<std::vector<Number_t> >
 zonotope_vertices (const std::vector<std::vector<Number_t> >& generators)
 {
   using std::vector;
-
-  const Adjacency_oracle_t is_adjacent (generators);
-  const Sign_flip_functor<Adjacency_oracle_t> flip (is_adjacent);
-
-  const int n = generators.size();
+  using std::pair;
+  typedef vector<Number_t> Vector_t;
+  typedef pair<Vector_t, Vector_t> Segment_t;
+  
   const int d = generators[0].size();
+
+  //
+  // Preprocess  co-directional generators
+  // 
+  const int m = generators.size();
+  vector<bool> handled (m, false);
+
+  vector<Segment_t> _generators; // the internal representation of the generators
+  
+  for ( int i = 0; i < m; ++i ) {
+    // look for codirectional vectors
+
+    if ( handled[i] ) {
+      continue;
+    }
+    // no multiple of generators[i] exists in _generators yet
+    
+    const auto& u = generators[i];
+    
+    pair<vector<Number_t>, vector<Number_t> > _u;
+    
+    _u.first = u;
+    _u.second = vector<Number_t> (d, Number_t(0));
+    
+    int j;
+    
+    for ( j = i+1; j < m; ++j ) {
+      if ( handled[j] ) {
+        // generators[j] is already a multiple of some other generator
+        continue;
+      }
+      
+      const auto& v = generators[j];
+      
+      // add only if v is parallel to u
+      int r, s;
+      for ( s = 0; s < d; ++s ) {
+        if ( u[s]*v[s] != 0 ){
+          break;
+        }
+      }
+      for ( r = 0; r < d; ++r ) {
+        if ( u[s] * v[r] != u[r] * v[s] ) {
+          break;
+        }
+      }
+      if ( r == d ) {
+        // u and v are parallel
+        for ( r = 0; r < d; ++r ) {
+          if ( u[s]*v[s] > 0 ) {
+            // u and v are codirectional
+            _u.first[r] += v[r];
+          } else {
+            // u and v have opposite directions
+            _u.second[r] += v[r];
+          }
+        }
+        handled[j] = true;
+      }
+    }
+
+    // push only if _u.first is non-zero
+    int r;
+    for ( r = 0; r < d; ++r ) {
+      if (_u.first[r] != 0 ) {
+        break;
+      }
+    }
+    if ( r != d ) {
+      _generators.push_back(_u);
+    }
+    handled[i] = true;
+  }
+
+  //
+  // Perform arrangement-based adjacency traversal
+  // 
+
+  const Adjacency_oracle_t is_adjacent (_generators);
+  const Sign_flip_functor<Adjacency_oracle_t> flip (is_adjacent);
+  
+  const int n = _generators.size();
 
   // Identify an initial vertex and its sign vector
   vector<bool> sign_vector(n);
@@ -127,9 +210,13 @@ zonotope_vertices (const std::vector<std::vector<Number_t> >& generators)
 
   // TODO: Handle the case when random_point lies on too many hyperplanes at once
   for ( int i = 0; i < n; ++i ) {
-    sign_vector[i] = ( 0 < dot<Number_t>(generators[i], random_point) );
+    sign_vector[i] = ( 0 < dot<Number_t>(_generators[i].first, random_point) );
     for ( int j = 0; j < d; ++j ) {
-      current_vertex[j] += sign_vector[i] * generators[i][j];
+      if (sign_vector[i]) {
+        current_vertex[j] += _generators[i].first[j];
+      } else {
+        current_vertex[j] += _generators[i].second[j];
+      }
     }
   }
 
