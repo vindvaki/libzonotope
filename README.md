@@ -81,15 +81,6 @@ The main files are:
 TODO
 ----
 
-- Put the library into a common **namespace**!
-
-- More elaborate **testing** (particularly for highly degenerate
-  inputs).
-
 - Special functions for two dimensions (i.e. **zonogons**).
 
 - Implement `O(n^{d-1}\log{n})` general position vertex enumeration.
-
-- Forward a user-facing output functor to `handle_event_points` (by 
-  passing it through the zonotope output functor calling 
-  `handle_event_points`)
