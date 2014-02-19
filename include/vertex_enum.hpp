@@ -31,9 +31,9 @@ struct Sign_flip_functor {
   {
     for ( int j = 0; j < adj_.d_; ++j ) {
       if ( sign_vector[k] ) {
-        v[j] += adj_.generators_[k][j];
-      } else {
         v[j] -= adj_.generators_[k][j];
+      } else {
+        v[j] += adj_.generators_[k][j];
       }
     }
     sign_vector[k] = ( ! sign_vector[k] );
