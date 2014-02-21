@@ -21,10 +21,8 @@ struct Zonotope_halfspaces_output_functor
 
   const int n;
   const int d;
-  
-  Halfspaces_container_output_functor& Output_fn;
 
-  std::vector<NT> generator_sum; 
+  Halfspaces_container_output_functor& Output_fn;
 
   Zonotope_halfspaces_output_functor (
     const std::vector<std::vector<NT> >& generators,
@@ -33,14 +31,7 @@ struct Zonotope_halfspaces_output_functor
       n ( generators.size() ),
       d ( generators[0].size() ),
       Output_fn( Output_fn )
-  {
-    generator_sum = std::vector<NT> ( d, NT ( 0 ) );
-    for ( const std::vector<NT>& v : generators ) {
-      for ( int i = 0; i < d; ++i ) {
-        generator_sum[i] += v[i];
-      }
-    }
-  }
+  {}
 
   void operator() (const Combination_container& combination) {
 
@@ -57,7 +48,6 @@ struct Zonotope_halfspaces_output_functor
           combination.kernel[0],
           combination.kernel[1],
           generators,
-          generator_sum,
           Output_fn );
     }
   }
@@ -65,4 +55,4 @@ struct Zonotope_halfspaces_output_functor
 
 } // namespace zonotope
 
-#endif
+#endif // ZONOTOPE_HALFSPACES_OUTPUT_FUNCTOR_HPP_

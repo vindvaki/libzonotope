@@ -38,7 +38,7 @@ struct Event_point_2 {
       if ( other.y == 0 ) {
         return x >= 0;
       }
-      
+
       if ( x >= 0 ) {
         return true;
       }
@@ -55,7 +55,7 @@ struct Event_point_2 {
       // other.x < 0
       return y > 0;
     }
-    // other.y != 0    
+    // other.y != 0
 
     if ( y > 0 && other.y < 0 ) {
       return true;
@@ -83,7 +83,6 @@ inline void handle_event_points (
   const Vector_t& c0,
   const Vector_t& c1,
   const Generator_container& generators,
-  const Vector_t& generator_sum,
   Halfspaces_output_functor& output_fn )
 {
   using std::vector;
@@ -139,45 +138,21 @@ inline void handle_event_points (
   // The initial halfplane is everything below the x-axis, and offset_vector
   // is the sum of those generators.
   for ( const auto& event : event_points ) {
-//    std::cout << event.x << " " << event.y << std::endl;
+    int i = (event.i >= 0) ? ( event.i ) : (-1 - event.i);
+    int sign = (event.i >= 0) ? (1) : (-1);
 
-    if ( event.i < 0 ) {
-      // a generator has just left the halfplane
+    for ( int r = 0; r < d; ++r ) {
+      offset_vector[r] += sign * generators[i][r];
+    }
+    if ( i > largest_index ) {
+      Hyperplane_t h (d);
       for ( int r = 0; r < d; ++r ) {
-        offset_vector[r] -= generators[-1 - event.i][r];
+        h.normal[r] = -event.y * c0[r] + event.x * c1[r];
       }
-    } else {
-      // a generator has just entered the halfplane
-      for ( int r = 0; r < d; ++r ) {
-        offset_vector[r] += generators[event.i][r];
-      }
+      standardize_vector( h.normal );
 
-      if ( event.i > largest_index ) {
-        // (current_combination, event.i) is a new combination, so we must
-        // consider its pair of inequalities
-
-        Hyperplane_t h(d);
-        Hyperplane_t h_antipode(d);
-
-        for ( int r = 0; r < d; ++r ) {
-          h.normal[r] = -event.y * c0[r] + event.x * c1[r] ;
-        }
-        standardize_vector( h.normal );
-
-        for ( int r = 0; r < d; ++r ) {
-          h_antipode.normal[r] = -h.normal[r];
-          h.offset -= h.normal[r] * offset_vector[r];
-          h_antipode.offset += h.normal[r] * generator_sum[r];
-        }
-        h_antipode.offset += h.offset;
-
-        h.combination = current_combination;
-        h.combination.push_back( event.i );
-        h_antipode.combination = h.combination;
-
-        output_fn( h );
-        output_fn( h_antipode );
-      }
+      h.offset= -dot<Number_t>(h.normal, offset_vector);
+      output_fn(h);
     }
   }
 }
