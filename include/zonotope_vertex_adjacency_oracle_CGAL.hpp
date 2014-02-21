@@ -35,9 +35,6 @@ struct Zonotope_vertex_adjacency_oracle_CGAL {
 
     Program lp (CGAL::EQUAL, true, 0, false, 0);
 
-    // Set the objective function
-    // lp.set_c(k, 1);
-
     // Set the constraints
     for ( int i = 0; i < n_; ++i ) {
       if ( i != k ) {
@@ -48,13 +45,6 @@ struct Zonotope_vertex_adjacency_oracle_CGAL {
             lp.set_a(i, j, -generators_[i].first[j]);
           }
         }
-        // else {
-        //   if (sign_vector[k]) {
-        //     lp.set_a(k, j, generators_[k][j]);
-        //   } else {
-        //     lp.set_a(k, j, -generators_[k][j]);
-        //   }
-        // }
       }
     }
     for ( int j = 0; j < d_; ++j ) {
@@ -68,7 +58,6 @@ struct Zonotope_vertex_adjacency_oracle_CGAL {
     // Solve the program
     Solution lp_solution = CGAL::solve_nonnegative_linear_program(lp, Exact_number_t());
     return lp_solution.is_infeasible();
-    // return ( lp_solution.objective_value() == 1 );
   }
 };
 
