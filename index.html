@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Libzonotope by vindvaki</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>Libzonotope</h1>
+        <p></p>
+
+        <p class="view"><a href="https://github.com/vindvaki/libzonotope">View the Project on GitHub <small>vindvaki/libzonotope</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/vindvaki/libzonotope/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/vindvaki/libzonotope/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/vindvaki/libzonotope">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="libzonotope-readme" class="anchor" href="#libzonotope-readme"><span class="octicon octicon-link"></span></a>libzonotope README</h1>
+
+<p>This is a collection of scripts and algorithms for zonotope
+manipulations. The most interesting functions are the generic C++
+algorithms implemented in the header files in the <code>include/</code>
+subdirectory of this project.</p>
+
+<p>A zonotope is a convex polytope that is the Minkowski sum of line
+segments. We write</p>
+
+<pre><code>Z(V) := [0,v_0] + ... + [0,v_{n-1}]
+</code></pre>
+
+<p>for the Minkowski sum of the line segments <code>[0,v_i]</code>, <code>i=0..n-1</code>,
+where <code>V=[v_0 .. v_{n-1}]</code> is the <code>d×n</code> matrix with columns <code>v_i</code>, and
+<code>0</code> is the origin in <code>d</code> dimensions.</p>
+
+<h2>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
+
+<p>In its current state, the project should be considered no more than a 
+proof of concept. For more sophisticated vertex enumeration, we recommend
+<a href="https://sites.google.com/site/christopheweibel/research/minksum">MinkSum</a>. The main reason someone might use the library right now
+is its small size, and the control it gives over the components used
+in its algorithms. We currently provide implementations that depend on the
+<a href="http://doc.cgal.org/latest/QP_solver/index.html">linear programming solver</a> from <a href="http://cgal.org">CGAL</a>, but
+it's fairly easy to adapt the code to a different solver.</p>
+
+<p>The main files are:</p>
+
+<ul>
+<li><p><code>include/combination_traversal.cpp</code>: A generic combination traversal
+algorithm for lexicographical traversal of combinations. Currently
+lacking is a proper definition of the concept
+<code>Combination_container</code>, though it's already implemented in
+<code>Combination_kernel_container&lt;NT&gt;</code>.</p></li>
+<li><p><code>include/combination_kernel_container.hpp</code>: A combination container
+that implements incremental kernel updates.</p></li>
+<li><p><code>include/zonotope_output_functor.hpp</code>: An example output functor for
+the combination traversal that constructs the H-representation of
+the zontope. The functor accepts all combinations, but forwards only
+the (d-2)-combinations it accepts to <code>handle_event_points</code> which
+generates a batch of halfspaces.</p></li>
+<li><p><code>include/event_point_2.hpp</code>: Implements the function
+<code>handle_event_points</code>, which generates a batch of halfspaces in time
+O(n*log(n)).</p></li>
+<li><p><code>zonotope_halfspaces.hpp</code>: Outputs the H-represenation by combining
+the appropriate output functor and combination container with the
+combination traversal algorithm.</p></li>
+<li><p><code>include/linalg.hpp</code>: Implements in particular the function
+<code>update_kernel</code> for efficient kernel updates (used in
+<code>Combination_kernel_container</code>).</p></li>
+<li><p><code>include/reverse_search.hpp</code>: Implements a completely generic
+<a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.26.4487">reverse search algorithm</a> by Avis and Fukuda,
+using functors for adjacency checks and local search.</p></li>
+<li><p><code>include/cell_enum.hpp</code>: Implements the functors for reverse search
+to perform cell enumeration in arrangements, and a wrapper function
+that finds a root cell. By providing an appropriate output functor,
+this can be used for vertex enumeration in zonotopes. This algorithm
+is also from the <a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.26.4487">original reverse search paper by Avis and Fukuda</a>.</p></li>
+<li><p><code>include/vertex_enum.hpp</code>: Implements vertex enumeration in
+zonotopes using depth-first-search in the dual arrangement with
+manual stack management, for comparison with reverse search (it can
+be concluded that we need to improve our implementation of reverse
+search).</p></li>
+</ul><h2>
+<a name="todo" class="anchor" href="#todo"><span class="octicon octicon-link"></span></a>TODO</h2>
+
+<ul>
+<li><p>Special functions for two dimensions (i.e. <strong>zonogons</strong>).</p></li>
+<li><p>Implement <code>O(n^{d-1}\log{n})</code> general position vertex enumeration.</p></li>
+</ul>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/vindvaki">vindvaki</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
