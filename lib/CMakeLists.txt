@@ -10,5 +10,5 @@ target_link_libraries(zonotope_c ${GMP_LIBRARIES} ${GMPXX_LIBRARIES} ${CGAL_LIBR
 
 file(GLOB ZONOTOPE_C_H ../src/zonotope_c.h )
 
-install(FILES ${ZONOTOPE_C_H} DESTINATION include)
-install(TARGETS zonotope_c DESTINATION lib)
+install(FILES ${ZONOTOPE_C_H} DESTINATION ${LIBZONOTOPE_INCLUDE_DIR})
+install(TARGETS zonotope_c DESTINATION ${LIBZONOTOPE_LIBRARY_DIR})
