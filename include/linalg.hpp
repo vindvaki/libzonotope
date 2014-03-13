@@ -15,8 +15,8 @@ namespace zonotope {
 /**
  * @brief The dot product of two vectors.
  */
-template <typename NT, typename NT_a = NT, typename NT_b = NT >
-inline NT dot( const std::vector<NT_a>& a, const std::vector<NT_b>& b )
+template <typename NT, typename Vector_t = std::vector<NT> >
+inline NT dot( const Vector_t& a, const Vector_t& b )
 {
   const int d = a.size();
   NT result = 0;
@@ -26,12 +26,11 @@ inline NT dot( const std::vector<NT_a>& a, const std::vector<NT_b>& b )
   return result;
 }
 
-
 /**
  * @brief Update a kernel basis when a vector is added to a combination
  *
  * @param kernel the basis of the kernel to be restricted
- 
+
  * @param v the vector to be added to the combination (used to
  *        restrict the kernel).
  *
@@ -40,19 +39,16 @@ inline NT dot( const std::vector<NT_a>& a, const std::vector<NT_b>& b )
  *       remains untouched.
  */
 
-template <typename NT>
-void update_kernel( std::vector<std::vector<NT> >& kernel, const std::vector<NT>& v )
+template <typename NT, typename Vector_t = std::vector<NT> >
+void update_kernel( std::vector<Vector_t>& kernel, const Vector_t& v )
 {
-  using std::vector;
-  using std::swap;
-
   const int d = kernel[0].size();
   const int k = kernel.size();
-  
-  vector<NT> x (k);
+
+  Vector_t x = v;
   int j = -1;
   for ( int i = 0; i < k; ++i ) {
-    x[i] = dot<NT> ( kernel[i], v );
+    x[i] = dot<NT, Vector_t> ( kernel[i], v );
     if ( x[i] != 0 ) {
       j = i;
     }
@@ -63,14 +59,14 @@ void update_kernel( std::vector<std::vector<NT> >& kernel, const std::vector<NT>
     return;
   }
 
-  swap(kernel[k-1], kernel[j]);
-  swap(x[k-1], x[j]);
-  
+  std::swap(kernel[k-1], kernel[j]);
+  std::swap(x[k-1], x[j]);
+
   for ( int i = 0; i < k - 1; ++i ) {
     for ( int r = 0; r < d; ++r ) {
       kernel[i][r] = x[k-1]*kernel[i][r] - x[i]*kernel[k-1][r];
     }
-    standardize_vector( kernel[i] );
+    standardize_vector<NT, Vector_t> ( kernel[i] );
   }
   kernel.pop_back();
 }
@@ -78,13 +74,13 @@ void update_kernel( std::vector<std::vector<NT> >& kernel, const std::vector<NT>
 /**
  *
  * @param generators The vector pool indexed by the combination
- * 
+ *
  * @param combination The current combination of indices
  *
  * @param next_element The element to be appended to the combination
  *                     (i.e. the index of the next vector in the
  *                     correpsonding vector-combination).
- * 
+ *
  * @param inverse The accumulated row operations to diagonalize
  *                generators[combination].
  *
@@ -92,23 +88,24 @@ void update_kernel( std::vector<std::vector<NT> >& kernel, const std::vector<NT>
  *
  * @post both inverse and determinant have been updated to represent
  *       [combination, next_element].
- * 
+ *
  */
-template <typename NT>
-void update_inverse( const std::vector<std::vector<NT> >& generators,
+template <typename NT, typename Vector_t = std::vector<NT> >
+void update_inverse( const std::vector<Vector_t>& generators,
                      const std::vector<int>& combination,
                      const int next_element,
-                     std::vector<std::vector<NT> >& inverse,
+                     std::vector<Vector_t>& inverse,
                      NT& determinant) {
 
   const int k = combination.size();
   const int d = generators[0].size();
-  
-  const std::vector<NT>& x = generators[next_element];
-  
+
+  const Vector_t& x = generators[next_element];
+
   // init lambda
-  std::vector<NT> lambda (d, 0);
+  Vector_t lambda (d);
   for ( int i = 0; i < d; ++i ) {
+    lambda[i] = 0;
     for ( int j = 0; j < d; ++j ) {
       lambda[i] += inverse[i][j] * x[j];
     }
@@ -144,7 +141,7 @@ void update_inverse( const std::vector<std::vector<NT> >& generators,
       }
     }
   }
-  
+
   // update the determinant
   determinant = lambda[k];
 

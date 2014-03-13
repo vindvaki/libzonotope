@@ -4,6 +4,7 @@
 #include "standardize_vector.hpp"
 #include "linalg.hpp"
 #include "hyperplane.hpp"
+#include "compare_by_angle.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -17,54 +18,26 @@ template <typename Number_t>
 struct Event_point_2 {
 
   /**
-   * @brief An index to identify the point with a generator.
-   *
-   * - `i >= 0` corresponds to `generator[i]`
-   * - `i < 0` corresponds to `-generator[-i-1]`
+   * Corresponds to sign*generators[index]
    */
-  int i;
+  
+  int generator_index;
+  int sign;
+  
+  Number_t x; ///< The planar x-coordinate
+  Number_t y; ///< The planar y-coordinate
 
-  Number_t x;                                               ///< The planar x-coordinate
-  Number_t y;                                               ///< The planar y-coordinate
-
-  Event_point_2 ( int i, Number_t x, Number_t y ) : i ( i ), x ( x ), y ( y ) {}
+  Event_point_2 ( int index, int sign, Number_t x, Number_t y ) :
+    generator_index ( index ),
+    sign ( sign ),
+    x ( x ),
+    y ( y ) {}
 
   /**
    *  Compare two event points by angle in `[0, 2*pi)`
    */
   inline bool operator< ( const Event_point_2<Number_t>& other ) const {
-
-    if ( y == 0 ) {
-      if ( other.y == 0 ) {
-        return x >= 0;
-      }
-
-      if ( x >= 0 ) {
-        return true;
-      }
-      // x < 0
-
-      return other.y < 0;
-    }
-    // y != 0
-
-    if ( other.y == 0 ) {
-      if ( other.x >= 0 ) {
-        return false;
-      }
-      // other.x < 0
-      return y > 0;
-    }
-    // other.y != 0
-
-    if ( y > 0 && other.y < 0 ) {
-      return true;
-    }
-    if ( y < 0 && other.y > 0 ) {
-      return false;
-    }
-    // both points lie on the same side of the x-axis
-    return y * other.x < x * other.y ;
+    return compare_by_angle<Event_point_2<Number_t> > (*this, other);
   }
 
 };
@@ -118,8 +91,8 @@ inline void handle_event_points (
 
     if ( x != 0 || y != 0 ) {
       // i corresponds to a nontrivial event
-      event_points.push_back( Event_point_2<Number_t> ( i, x, y ) );
-      event_points.push_back( Event_point_2<Number_t> ( -i - 1, -x, -y ) );
+      event_points.push_back( Event_point_2<Number_t> ( i,  1,  x,  y ) );
+      event_points.push_back( Event_point_2<Number_t> ( i, -1, -x, -y ) );
 
       if ( y < 0 || ( y == 0 && x < 0 ) ) {
         // v = generators[i] is below the x-axis
@@ -138,20 +111,19 @@ inline void handle_event_points (
   // The initial halfplane is everything below the x-axis, and offset_vector
   // is the sum of those generators.
   for ( const auto& event : event_points ) {
-    int i = (event.i >= 0) ? ( event.i ) : (-1 - event.i);
-    int sign = (event.i >= 0) ? (1) : (-1);
-
+    int i = event.generator_index;
+    
     for ( int r = 0; r < d; ++r ) {
-      offset_vector[r] += sign * generators[i][r];
+      offset_vector[r] += event.sign * generators[i][r];
     }
     if ( i > largest_index ) {
       Hyperplane_t h (d);
       for ( int r = 0; r < d; ++r ) {
         h.normal[r] = -event.y * c0[r] + event.x * c1[r];
       }
-      standardize_vector( h.normal );
+      standardize_vector<Number_t, Vector_t> ( h.normal );
 
-      h.offset= -dot<Number_t>(h.normal, offset_vector);
+      h.offset = -dot<Number_t, Vector_t>(h.normal, offset_vector);
       output_fn(h);
     }
   }
@@ -159,4 +131,4 @@ inline void handle_event_points (
 
 } // namespace zonotope
 
-#endif
+#endif // EVENT_POINT_2_HPP_
