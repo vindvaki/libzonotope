@@ -27,15 +27,15 @@ struct Hyperplane {
   Vector_t normal;
 
   std::vector<int> combination;
-  
+
   /**
    * @brief Construct the trivial hyperplane in d dimensions
    */
-  Hyperplane( const typename Vector_t::size_type d ) : 
-    offset( Number_t(0) ), 
+  Hyperplane( const typename Vector_t::size_type d ) :
+    offset( Number_t(0) ),
     normal( d, Number_t(0) )
   {}
-  
+
   /**
    * @brief Construct a hyperplane from a given offset and normal
    *
@@ -48,26 +48,26 @@ struct Hyperplane {
    *
    * - A standard format for equivalence up to a positive constant
    *   multiple can represent halfspaces with orientation.
-   *   
+   *
    * - A standard format for equivalence up to any constant multiple
    *   can represent hyperplane equations.
    */
-  Hyperplane( const Number_t& offset, const Vector_t& normal ) : 
-    offset ( offset ), 
+  Hyperplane( const Number_t& offset, const Vector_t& normal ) :
+    offset ( offset ),
     normal ( normal ) {}
-  
-  /** 
+
+  /**
    * @brief Compare two hyperplanes lexicographically
    */
   bool operator< ( const Hyperplane& other ) const {
     if ( offset < other.offset ) {
       return true;
     }
-    
+
     if ( ( offset == other.offset ) && ( normal < other.normal ) ) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -89,7 +89,7 @@ struct Hyperplane {
     }
     return false;
   }
-  
+
   typename Vector_t::size_type dimension() const {
     return normal.size();
   }
@@ -116,6 +116,27 @@ struct Type_casting_functor<Hyperplane<mpz_class>, Hyperplane<long> > {
     return h_long;
   }
 };
+
+/**
+ * Specialize Type_casting_functor for double
+ */
+template <>
+struct Type_casting_functor<Hyperplane<mpz_class>, Hyperplane<double> > {
+  Type_casting_functor<mpz_class, double> Cast_mpz_to_double;
+
+  Hyperplane<double> operator() (const Hyperplane<mpz_class>& h_mpz ) const {
+    const int d = h_mpz.normal.size();
+
+    Hyperplane<double> h_double (d);
+
+    h_double.offset = Cast_mpz_to_double(h_mpz.offset);
+    for ( int i = 0; i < d; ++i ) {
+      h_double.normal[i] = Cast_mpz_to_double(h_mpz.normal[i]);
+    }
+    return h_double;
+  }
+};
+
 
 } // namespace zonotope
 
