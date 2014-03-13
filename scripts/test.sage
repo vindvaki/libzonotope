@@ -45,37 +45,36 @@ def run_test( V, identifier=""):
     test_results['V-rep'] = {
         'status': vertices_sage == vertices_libz,
         'sage': vertices_sage,
-        'libz': vertices_libz,
+        'libz': vertices_libz
     }
 
     return test_results
 
-def handle_results(test_results, write_files = False):
+def handle_results(test_results, write_files = True):
     V_file_str_pattern = "fail-{0}-generators.txt"
     d, n = V.dimensions()
-    status = True
+    tests_passed = True
     for t in ['Volume', 'H-rep', 'V-rep']:
         r = test_results[t]
+        if r['status'] == True:
+            print colored('pass(', 'green') + t + colored(')', 'green'),
         if r['status'] == False:
-            status = False
+            tests_passed = False
             print colored('FAIL(', 'red') + t + colored(')','red'),
             if write_files == True:
                 V_file_str = V_file_str_pattern.format(t)
                 with open(V_file_str, 'w+') as f:
                     f.write(str(V))
-    if status == True:
-        print colored('passed', 'green'),
     print ""
-
-    return status
+    return tests_passed
 
 if __name__ == '__main__':
-    ntests = 100
+    ntests = 1000
     d, n = 2, 4
     for t in xrange(1, 1+ntests):
         print "Test {0}/{1}:".format(t, ntests),
 
-        V = random_matrix(ZZ, n, d, x=-10, y=10)
+        V = random_matrix(ZZ, n, d)#, x=-10, y=10)
         test_results = run_test(V, t)
         tests_passed = handle_results(test_results)
 
