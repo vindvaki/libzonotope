@@ -31,6 +31,14 @@ struct Type_casting_functor<mpz_class, long> {
   }
 };
 
+template <>
+struct Type_casting_functor<mpz_class, double> {
+  Type_casting_functor<mpz_class, long> cast_to_long;
+  double operator() (const mpz_class& val) const {
+    return double(cast_to_long(val));
+  }
+};
+
 template<>
 struct Type_casting_functor<std::vector<long>, std::vector<mpz_class> > {
   std::vector<mpz_class> operator() (const std::vector<long>& v_long ) const {
@@ -47,7 +55,7 @@ template<>
 struct Type_casting_functor<std::vector<std::vector<long> >, std::vector<std::vector<mpz_class> > > {
 
   Type_casting_functor<std::vector<long>, std::vector<mpz_class> > cast;
-  
+
   std::vector<std::vector<mpz_class> > operator() (const std::vector<std::vector<long> >& v_long ) {
     const int d = v_long.size();
     std::vector<std::vector<mpz_class> > v_mpz (d);
