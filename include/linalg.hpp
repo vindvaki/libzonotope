@@ -26,6 +26,23 @@ inline NT dot( const Vector_t& a, const Vector_t& b )
   return result;
 }
 
+template<typename NT>
+inline std::vector<std::vector<NT> >
+zero_matrix(const int d) {
+  return std::vector<std::vector<NT> > (d, std::vector<NT>(d, NT(0)));
+}
+
+template<typename NT>
+inline std::vector<std::vector<NT> >
+identity_matrix(const int d) {
+  auto result = zero_matrix<NT> (d);
+  for ( int i = 0; i < d; ++i ) {
+    result[i][i] = 1;
+  }
+  return result;
+}
+
+
 /**
  * @brief Update a kernel basis when a vector is added to a combination
  *
