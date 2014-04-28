@@ -2,6 +2,7 @@
 #define COMBINATION_KERNEL_CONTAINER_IML_HPP_
 
 #include "linalg.hpp"
+#include "combination_base.hpp"
 
 #include <algorithm>
 #include <vector>
@@ -16,7 +17,8 @@ namespace zonotope {
  * @brief A combination container using IML for kernel computations
  * 
  */
-struct Combination_kernel_container_IML {
+struct Combination_kernel_container_IML : Combination_base
+{
 
   /**
    * The generators of the zonotope
@@ -24,21 +26,9 @@ struct Combination_kernel_container_IML {
   const std::vector<std::vector<mpz_class> >& generators;
 
   /**
-   * An integer in 1..n
-   */
-  const int MAX_SIZE;
-  
-  /**
-   * A sorted stack of up to MAX_SIZE integers in 0..n-1, that
-   * can still be extended to include MAX_SIZE integers.
-   */
-  std::vector<int> elements;
-
-  /**
    * The kernel of generators[combination]
    */
   std::vector<std::vector<mpz_class> > kernel;
-  
 
   /**
    * @brief Construct an empty combination with room for up to
@@ -46,18 +36,10 @@ struct Combination_kernel_container_IML {
    */
   Combination_kernel_container_IML( const std::vector<std::vector<mpz_class> >& generators,
                                     const int MAX_SIZE ) :
-    generators( generators ),
-    MAX_SIZE( MAX_SIZE )
-  {
-    using std::vector;
-    
-    const int d = generators[0].size();
-    
-    kernel = vector<vector<mpz_class> > ( d, vector<mpz_class>( d, 0 ) );
-    for ( int i = 0; i < d; ++i ) {
-      kernel[i][i] = 1;
-    }
-  }
+    : Combination_base (MAX_SIZE, generators.size()),
+    , generators (generators)
+    , kernel (identity_matrix<mpz_class>(generators[0].size()))
+    { }
 
   /**
    * @brief Extend the combination to include i
@@ -65,7 +47,7 @@ struct Combination_kernel_container_IML {
    * @param i an integer in (top() + 1) .. neighbor_upper_bound()
    */
   void extend(const int new_element) {
-    elements.push_back(new_element);
+    Combination_base.extend(new_element);
     
     const int d = generators[0].size();
     const int k = size();
@@ -114,36 +96,6 @@ struct Combination_kernel_container_IML {
     }
 
     delete [] combination_vectors;
-  }
-
-  /**
-   * @brief The largest value in the combination, or -1 if empty
-   */
-  int back() const {
-    if (!elements.size()) {
-      return -1;
-    }
-    return elements.back();
-  }
-
-  std::vector<int>::size_type size() const {
-    return elements.size();
-  }
-
-  int neighbor_upper_bound() const {
-    const int n = generators.size();
-    const int k = elements.size();
-    
-    return (n - (MAX_SIZE - k) + 1);
-  }
-
-  /**
-   * @brief true iff i is in the combination
-   *
-   * Performs an O(log(k)) search for i in a combination of size k.
-   */
-  bool find(int i) const {
-    return std::binary_search(elements.begin(), elements.end(), i);
   }
 
   /**
