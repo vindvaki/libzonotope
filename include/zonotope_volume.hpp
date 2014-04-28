@@ -27,7 +27,7 @@ template <typename User_number_t = mpz_class,
           typename Internal_number_t = mpz_class>
 User_number_t zonotope_volume (const std::vector<std::vector<User_number_t> >& generators) {
 
-  typedef Combination_inverse_container<Internal_number_t > Combination_container_t;
+  typedef Combination_inverse_container<Internal_number_t> Combination_container_t;
   typedef Zonotope_volume_output_functor<Internal_number_t, Combination_container_t> Output_functor_t;
   Type_casting_functor<Internal_number_t, User_number_t> Cast_to_user_type;
 
@@ -41,7 +41,7 @@ User_number_t zonotope_volume (const std::vector<std::vector<User_number_t> >& g
   Output_functor_t zonotope_volume_output (internal_generators);
 
   traverse_combinations<Combination_container_t, Output_functor_t>
-    (empty_combination, d, zonotope_volume_output);
+    (empty_combination, zonotope_volume_output);
 
   User_number_t volume = Cast_to_user_type(zonotope_volume_output.volume);
   scaling_factor = _pow<Internal_number_t> (scaling_factor, d);

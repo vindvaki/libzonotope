@@ -29,28 +29,30 @@ void zonotope_halfspaces (
 
   typedef Container_output_functor<Halfspaces_container_t,
                                    Hyperplane<Internal_number_t>,
-                                   Hyperplane<User_number_t> > Container_output_functor_t;
+                                   Hyperplane<User_number_t> >
+      Container_output_functor_t;
 
   Container_output_functor_t Halfspaces_container_output_fn ( halfspaces );
-  
+
   typedef Zonotope_halfspaces_output_functor<Internal_number_t,
                                              Combination_container_t,
-                                             Container_output_functor_t> Traversal_output_functor_t;
+                                             Container_output_functor_t>
+      Traversal_output_functor_t;
 
   const int d = generators_in[0].size();
 
   std::vector<std::vector<Internal_number_t> > internal_generators;
-  
+
   preprocess_generators<User_number_t, Internal_number_t> (generators_in,
                                                            internal_generators);
-  
+
   Combination_container_t empty_combination (internal_generators, d-1);
 
   Traversal_output_functor_t Traversal_output_fn (internal_generators,
                                                   Halfspaces_container_output_fn);
 
   traverse_combinations<Combination_container_t, Traversal_output_functor_t>
-    (empty_combination, d-2, Traversal_output_fn);
+    (empty_combination, Traversal_output_fn);
   // we only traverse up to (d-2)-combinations because after that,
   // Traversal_output_fn takes over and traverses the (d-1)-child-combinations
   // in a manner specific to the halfspace traversal.

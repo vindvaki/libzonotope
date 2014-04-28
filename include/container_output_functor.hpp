@@ -10,8 +10,9 @@ struct Container_output_functor {
 
   Container_output_functor(Container_t& data) : data(data) {}
 
-  void operator() (const Input_t& val) {
+  bool operator() (const Input_t& val) {
     data.insert( Cast_type(val) );
+    return true;
   }
 };
 
