@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 
 project(LIBZONOTOPE)
 
-set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra")
+set(CMAKE_CXX_FLAGS "-O3 -std=c++11 -Wall -Wextra")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
