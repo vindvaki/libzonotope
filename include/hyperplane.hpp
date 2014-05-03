@@ -19,22 +19,16 @@ namespace zonotope {
  * `(offset==1)`, then we have a one-to-one representation of halfspaces
  * in the given dimension.
  */
-template <typename Number_t,
-          typename Vector_t = std::vector<Number_t> >
+template <typename Vector_t_>
 struct Hyperplane {
 
+  typedef Vector_t_ Vector_t;
+  typedef typename Vector_t::value_type Number_t;
+
+  typedef typename Vector_t::size_type size_type;
+  
   Number_t offset;
   Vector_t normal;
-
-  std::vector<int> combination;
-
-  /**
-   * @brief Construct the trivial hyperplane in d dimensions
-   */
-  Hyperplane( const typename Vector_t::size_type d ) :
-    offset( Number_t(0) ),
-    normal( d, Number_t(0) )
-  {}
 
   /**
    * @brief Construct a hyperplane from a given offset and normal
@@ -52,9 +46,18 @@ struct Hyperplane {
    * - A standard format for equivalence up to any constant multiple
    *   can represent hyperplane equations.
    */
-  Hyperplane( const Number_t& offset, const Vector_t& normal ) :
-    offset ( offset ),
-    normal ( normal ) {}
+
+  Hyperplane( const size_type d )
+    : offset ( 0 )
+    , normal ( Vector_t(d) )
+    {}
+
+  /**
+   * This hyperplane type doesn't store the combination. 
+   */
+  Hyperplane( const std::vector<int>& combination )
+    : Hyperplane(combination.size() + 1)
+    { }
 
   /**
    * @brief Compare two hyperplanes lexicographically
@@ -78,65 +81,48 @@ struct Hyperplane {
    * same dimensions and the same cartesian coordinates.
    */
   bool operator== ( const Hyperplane& other ) const {
-    if ( ( offset == other.offset ) && ( dimension() == other.dimension() ) ) {
-      const int d = dimension();
-      for ( int i = 0; i < d; ++i ) {
-        if ( normal[i] != other.normal[i] ) {
-          return false;
-        }
-      }
-      return true;
-    }
-    return false;
+    return (offset == other.offset) && (normal == other.normal);
   }
 
-  typename Vector_t::size_type dimension() const {
+  size_type dimension() const {
     return normal.size();
   }
 
 };
 
 
-/**
- * Specialize Type_casting_functor for integral
- */
-template <>
-struct Type_casting_functor<Hyperplane<mpz_class>, Hyperplane<long> > {
-  Type_casting_functor<mpz_class, long> Cast_mpz_to_long;
+template <typename Vector_t_>
+struct Hyperplane_and_combination {
 
-  Hyperplane<long> operator() (const Hyperplane<mpz_class>& h_mpz ) const {
-    const int d = h_mpz.normal.size();
+  typedef Vector_t_ Vector_t;
+  typedef typename Vector_t::value_type Number_t;
 
-    Hyperplane<long> h_long (d);
+  typedef typename Vector_t::size_type size_type;
+  
+  Number_t offset;
+  Vector_t normal;
 
-    h_long.offset = Cast_mpz_to_long(h_mpz.offset);
-    for ( int i = 0; i < d; ++i ) {
-      h_long.normal[i] = Cast_mpz_to_long(h_mpz.normal[i]);
-    }
-    return h_long;
+  std::vector<int> combination;
+
+  Hyperplane_and_combination( const std::vector<int>& combination )
+    : offset ( 0 )
+    , normal ( Vector_t( combination.size()+1 ) )
+    , combination( combination )
+    { }
+
+  bool operator< ( const Hyperplane_and_combination& other ) const {
+    return combination < other.combination;
   }
-};
 
-/**
- * Specialize Type_casting_functor for double
- */
-template <>
-struct Type_casting_functor<Hyperplane<mpz_class>, Hyperplane<double> > {
-  Type_casting_functor<mpz_class, double> Cast_mpz_to_double;
-
-  Hyperplane<double> operator() (const Hyperplane<mpz_class>& h_mpz ) const {
-    const int d = h_mpz.normal.size();
-
-    Hyperplane<double> h_double (d);
-
-    h_double.offset = Cast_mpz_to_double(h_mpz.offset);
-    for ( int i = 0; i < d; ++i ) {
-      h_double.normal[i] = Cast_mpz_to_double(h_mpz.normal[i]);
-    }
-    return h_double;
+  bool operator== ( const Hyperplane_and_combination& other ) const {
+    return combination == other.combination;
   }
-};
 
+  size_type dimension() const {
+    return normal.size();
+  }
+
+};
 
 } // namespace zonotope
 

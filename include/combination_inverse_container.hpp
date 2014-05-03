@@ -1,7 +1,7 @@
 #ifndef COMBINATION_INVERSE_CONTAINER_HPP_
 #define COMBINATION_INVERSE_CONTAINER_HPP_
 
-#include "linalg.hpp"
+#include "update_inverse.hpp"
 #include "combination_base.hpp"
 
 #include <algorithm>

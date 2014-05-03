@@ -1,9 +1,9 @@
 #ifndef EVENT_POINT_2_HPP_
 #define EVENT_POINT_2_HPP_
 
-#include "standardize_vector.hpp"
 #include "linalg.hpp"
-#include "hyperplane.hpp"
+#include "zonotope.hpp"
+
 #include "compare_by_angle.hpp"
 
 #include <algorithm>
@@ -20,14 +20,15 @@ struct Event_point_2 {
   /**
    * Corresponds to sign*generators[index]
    */
+  typedef Number_t value_type;
   
   int generator_index;
   int sign;
   
-  Number_t x; ///< The planar x-coordinate
-  Number_t y; ///< The planar y-coordinate
+  value_type x; ///< The planar x-coordinate
+  value_type y; ///< The planar y-coordinate
 
-  Event_point_2 ( int index, int sign, Number_t x, Number_t y ) :
+  Event_point_2 ( int index, int sign, const value_type& x, const value_type& y ) :
     generator_index ( index ),
     sign ( sign ),
     x ( x ),
@@ -37,7 +38,7 @@ struct Event_point_2 {
    *  Compare two event points by angle in `[0, 2*pi)`
    */
   inline bool operator< ( const Event_point_2<Number_t>& other ) const {
-    return compare_by_angle<Event_point_2<Number_t> > (*this, other);
+    return compare_by_angle<Event_point_2<value_type> > (*this, other);
   }
 
 };
@@ -45,59 +46,58 @@ struct Event_point_2 {
 /**
  * @brief Handle the last step of the zonotope H-rep. construction (the planar view)
  */
-template <typename Number_t,
-          typename Vector_t,
-          typename Generator_container,
-          typename Halfspaces_output_functor,
-          typename Hyperplane_t = Hyperplane<Number_t> >
+template <typename Zonotope_data_t,
+          typename Output_functor_t,
+          typename Kernel_number_t>
 inline void handle_event_points (
-  const int largest_index,
-  const std::vector<int>& current_combination,
-  const Vector_t& c0,
-  const Vector_t& c1,
-  const Generator_container& generators,
-  Halfspaces_output_functor& output_fn )
+  const Zonotope_data_t& z,
+  const Combination_kernel_container<Zonotope_data_t, Kernel_number_t>& c,
+   Output_functor_t& outfn )
 {
-  using std::vector;
-
-  const int n = generators.size();
-  const int d = generators[0].size();
+  typedef typename Output_functor_t::value_type Hyperplane_t;
+  
+  typedef Event_point_2<Kernel_number_t> EP;
+  
+  const int n = z.num_generators;
+  const int d = z.dimension;
 
   // A vector that projects to the inequality offset
-  Vector_t offset_vector( d );
 
-  // The event points in the plane spanned by c0, c1
-  vector<Event_point_2<Number_t> > event_points;
+  typename Hyperplane_t::Vector_t offset_vector (d);
+  
+  // The event points in the plane spanned by c.kernel[0], c.kernel[1]
+  std::vector<EP> event_points;
 
-
-  // construct a boolean map of the combination for faster
+  // construct a boolean map of the c for faster
   // membership lookup
-  vector<bool> is_elem(n, false);
-  for ( int i : current_combination ) {
+  std::vector<bool> is_elem(n, false);
+  for ( int i : c.elements ) {
     is_elem[i] = true;
   }
 
   // Generate the event points
   for ( int i = 0; i < n; ++i ) {
     if ( is_elem[i] ) {
-      // i is in the current combination, so it generators[i] projects to the
-      // origin in the plane spanned by c0, c1.
+      // i is in the current c, so it generators[i] projects to the
+      // origin in the plane spanned by c.kernel[0], c.kernel[1].
       continue;
     }
-    // i is in the complementary combination
-    const Vector_t& v = generators[i];
-    const Number_t x = dot<Number_t>( c0, v );
-    const Number_t y = dot<Number_t>( c1, v );
+
+    // i is in the complementary c
+    const auto& v = z.generators(c.kernel[0][0])[i];
+    const auto x = dot( c.kernel[0], v );
+    const auto y = dot( c.kernel[1], v );
 
     if ( x != 0 || y != 0 ) {
       // i corresponds to a nontrivial event
-      event_points.push_back( Event_point_2<Number_t> ( i,  1,  x,  y ) );
-      event_points.push_back( Event_point_2<Number_t> ( i, -1, -x, -y ) );
+      event_points.push_back( EP ( i,  1,  x,  y ) );
+      event_points.push_back( EP ( i, -1, -x, -y ) );
 
       if ( y < 0 || ( y == 0 && x < 0 ) ) {
         // v = generators[i] is below the x-axis
         for ( int r = 0; r < d; ++r ) {
-          offset_vector[r] += v[r];
+          // TODO: Use same type as Hyperplane_t
+          offset_vector[r] += z.generators(offset_vector[r])[i][r];
         }
       }
     }
@@ -114,17 +114,33 @@ inline void handle_event_points (
     int i = event.generator_index;
     
     for ( int r = 0; r < d; ++r ) {
-      offset_vector[r] += event.sign * generators[i][r];
+      offset_vector[r] += event.sign * z.generators(offset_vector[r])[i][r];
     }
-    if ( i > largest_index ) {
+    if ( i > c.elements.back() ) {
+      // TODO: Identify where to 
+      
       Hyperplane_t h (d);
-      for ( int r = 0; r < d; ++r ) {
-        h.normal[r] = -event.y * c0[r] + event.x * c1[r];
-      }
-      standardize_vector<Number_t, Vector_t> ( h.normal );
 
-      h.offset = -dot<Number_t, Vector_t>(h.normal, offset_vector);
-      output_fn(h);
+      for ( int r = 0; r < d; ++r ) {
+        Kernel_number_t tmp = -event.y * c.kernel[0][r] + event.x * c.kernel[1][r];
+        h.normal[r] = static_cast<typename Hyperplane_t::Number_t>(tmp);
+      }
+
+      h.offset = -dot(h.normal, offset_vector);
+
+      // standardize the representation
+      if ( h.offset > 0 ) {
+        for ( int r = 0; r < d; ++r ) {
+          h.normal[r] /= h.offset;
+        }
+      } else if ( h.offset < 0 ) {
+        for ( int r = 0; r < d; ++r ) {
+          h.normal[r] /= -h.offset;
+        }
+        h.offset = -1;
+      }
+      
+      outfn(h);
     }
   }
 }

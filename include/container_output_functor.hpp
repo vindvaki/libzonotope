@@ -3,15 +3,19 @@
 
 namespace zonotope {
 
-template <typename Container_t, typename Input_t, typename Output_t = Input_t>
+template <typename Container_t>
 struct Container_output_functor {
+  
+  typedef typename Container_t::value_type value_type;
+  
   Container_t& data;
-  Type_casting_functor<Input_t, Output_t> Cast_type;
 
   Container_output_functor(Container_t& data) : data(data) {}
 
-  bool operator() (const Input_t& val) {
-    data.insert( Cast_type(val) );
+  bool operator() (const value_type& val) {
+    data.insert(data.end(), val);
+    // iterator position data.end() is necessary for lists and vectors,
+    // and optional for sets.
     return true;
   }
 };
