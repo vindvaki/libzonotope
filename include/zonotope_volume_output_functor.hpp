@@ -1,28 +1,29 @@
 #ifndef ZONOTOPE_VOLUME_OUTPUT_FUNCTOR_HPP_
 #define ZONOTOPE_VOLUME_OUTPUT_FUNCTOR_HPP_
 
-#include <vector>
-#include <iostream>
-
-#include "output_functor_base.hpp"
-
 namespace zonotope {
 
-template <typename NT, typename Combination_container>
-struct Zonotope_volume_output_functor : Output_functor_base<NT>
+template <typename Number_t, typename Combination_container>
+struct Zonotope_volume_output_functor 
 {
-  using typename Output_functor_base<NT>::Generator_container_t;
-  
-  NT volume;
+  typedef typename Combination_container::Inverse_number_t Internal_number_t;
 
-  Zonotope_volume_output_functor (const Generator_container_t& generators)
-    : Output_functor_base<NT> (generators)
-    , volume (NT(0))
+  const int dimension;
+  Number_t  volume;
+  Zonotope_volume_output_functor (int dimension)
+    : dimension (dimension)
+    , volume (0)
   { }
 
-  bool operator() (const Combination_container& combination) {
-    if ( combination.size() == (this->d) ) {
-      volume += abs(combination.determinant);
+  bool operator() (const Combination_container& c) {
+    if ( c.size() == dimension ) {
+      // c.scaling == 1 iff all input coefficients are integers.
+      // Number_t is only allowed to be integral if c.scaling == 1
+      Internal_number_t det = c.determinant;
+      if ( det < 0 ) {
+        det = -det; 
+      }
+      volume += static_cast<Number_t>(det) / static_cast<Number_t>(c.scaling);
       return true;
     }
     return false;

@@ -13,40 +13,29 @@
 
 namespace zonotope {
 
-template <typename T>
-T _pow(const T& x, unsigned int n) {}
+template<typename Output_number_t,
+         typename Internal_number_t,
+         typename Zonotope_data_t>
+Output_number_t 
+zonotope_volume (const Zonotope_data_t& z) 
+{
+  typedef Combination_inverse_container<Zonotope_data_t, Internal_number_t> 
+    Combination_container_t;
 
-template <>
-mpz_class _pow<mpz_class>(const mpz_class& x, unsigned int n) {
-  mpz_class y;
-  mpz_pow_ui(y.get_mpz_t(), x.get_mpz_t(), n);
-  return y;
-}
+  typedef Zonotope_volume_output_functor<Output_number_t, Combination_container_t>
+    Output_functor_t;
 
-template <typename User_number_t = mpz_class,
-          typename Internal_number_t = mpz_class>
-User_number_t zonotope_volume (const std::vector<std::vector<User_number_t> >& generators) {
+  Combination_container_t 
+    empty_combination (z, z.dimension);
 
-  typedef Combination_inverse_container<Internal_number_t> Combination_container_t;
-  typedef Zonotope_volume_output_functor<Internal_number_t, Combination_container_t> Output_functor_t;
-  Type_casting_functor<Internal_number_t, User_number_t> Cast_to_user_type;
-
-  const int d = generators[0].size();
-
-  std::vector<std::vector<Internal_number_t> > internal_generators;
-  Internal_number_t scaling_factor;
-  preprocess_generators(generators, internal_generators, scaling_factor);
-
-  Combination_container_t empty_combination (internal_generators, d);
-  Output_functor_t zonotope_volume_output (internal_generators);
+  Output_functor_t 
+    zonotope_volume_output (z.dimension);
 
   traverse_combinations<Combination_container_t, Output_functor_t>
     (empty_combination, zonotope_volume_output);
 
-  User_number_t volume = Cast_to_user_type(zonotope_volume_output.volume);
-  scaling_factor = _pow<Internal_number_t> (scaling_factor, d);
-  volume /= Cast_to_user_type(scaling_factor);
-  
+  Output_number_t volume = static_cast<Output_number_t> (zonotope_volume_output.volume);
+
   return volume;
 }
 
