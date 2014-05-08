@@ -8,7 +8,6 @@
 
 #include <cmath>
 #include <boost/multiprecision/gmp.hpp>
-#include <boost/multiprecision/mpfi.hpp>
 #include <eigen3/Eigen/Eigen>
 
 namespace zonotope {
@@ -32,7 +31,7 @@ public:
 
   template <typename T>
   using Vector_t = Col_vector<T, D>;
-  
+
   template <typename T>
   using Matrix_t = Col_matrix<T, D, Eigen::Dynamic>;
 
@@ -43,21 +42,21 @@ public:
   typedef Vector_t<ZZ> Vector_ZZ;
   typedef Vector_t<QQ> Vector_QQ;
   typedef Vector_t<FF> Vector_FF;
-  
+
   typedef Matrix_t<ZZ> Matrix_ZZ;
   typedef Matrix_t<QQ> Matrix_QQ;
   typedef Matrix_t<FF> Matrix_FF;
 
   const int dimension;
   const int num_generators;
-  
+
 private:
   std::vector<ZZ> scaling_;
 
 public:
   //
   // combinatorially equivalent representations
-  // 
+  //
 
   const Matrix_QQ generators_qq;         // faithful representation of input
   const Matrix_ZZ generators_zz;         // generator-wise integral scaling of qq
@@ -91,7 +90,7 @@ public:
 
   //
   // Constructors
-  // 
+  //
 
   template<typename T>
   Zonotope_data(const int d, const int n, const T* generators_buffer)
@@ -106,7 +105,7 @@ public:
   {
     static_assert(D > 0, "Input dimension must be constant.");
   }
-  
+
 private:
 
   template <typename T>
@@ -119,11 +118,11 @@ private:
     }
     return m_qq;
   }
-  
+
   Zonotope_data(const Matrix_QQ& input_generators_qq)
     : dimension(input_generators_qq.rows())
     , num_generators(input_generators_qq.cols())
-      
+
       // generators
     , scaling_(num_generators, ZZ(1))
     , generators_qq(input_generators_qq)
@@ -135,12 +134,12 @@ private:
   }
 
   Matrix_FF init_generators_ff() {
-    
+
     const int d = generators_qq.rows();
     const int n = generators_qq.cols();
-    
+
     Matrix_FF generators_ff (d, n);
-    
+
     for ( int k = 0; k < n; ++k ) {
       for ( int i = 0; i < d; ++i ) {
         generators_ff(i, k) = static_cast<FF>(generators_qq(i, k));
@@ -155,9 +154,9 @@ private:
   Matrix_ZZ init_generators_zz() {
     const int d = generators_qq.rows();
     const int n = generators_qq.cols();
-    
+
     Matrix_ZZ generators_zz (d, n);
-    
+
     for ( int k = 0; k < n; ++k ) {
       ZZ& den_lcm = scaling_[k];
 
@@ -168,7 +167,7 @@ private:
         }
         den_lcm = lcm(den_lcm, static_cast<ZZ>(denominator(val)));
       }
-    
+
       assert (den_lcm != 0);
 
       for ( int i = 0; i < d; ++i ) {
@@ -183,9 +182,9 @@ private:
   Matrix_ZZ init_generators_zz_uniform() {
     const int d = generators_qq.rows();
     const int n = generators_qq.cols();
-    
+
     Matrix_ZZ generators_zz_uniform (d, n);
-    
+
     ZZ matrix_den_lcm = 1;
 
     for ( int k = 0; k < n; ++k ) {
