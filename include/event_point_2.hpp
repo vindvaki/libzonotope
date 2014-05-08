@@ -1,11 +1,11 @@
-#ifndef EVENT_POINT_2_HPP_
-#define EVENT_POINT_2_HPP_
+#ifndef ZONOTOPE_EVENT_POINT_2_HPP_
+#define ZONOTOPE_EVENT_POINT_2_HPP_
 
-#include "linalg.hpp"
 #include "zonotope.hpp"
-
+#include "standardize_vector.hpp"
 #include "compare_by_angle.hpp"
 
+#include <type_traits>
 #include <algorithm>
 #include <vector>
 
@@ -14,34 +14,68 @@ namespace zonotope {
 /**
  * @brief A structure to order vectors in the plane by angle around the origin.
  */
-template <typename Number_t>
+template <typename Number_t_>
 struct Event_point_2 {
 
   /**
    * Corresponds to sign*generators[index]
    */
-  typedef Number_t value_type;
-  
-  int generator_index;
-  int sign;
-  
-  value_type x; ///< The planar x-coordinate
-  value_type y; ///< The planar y-coordinate
+  typedef Number_t_ Number_t;
 
-  Event_point_2 ( int index, int sign, const value_type& x, const value_type& y ) :
-    generator_index ( index ),
-    sign ( sign ),
-    x ( x ),
-    y ( y ) {}
+  int index;
+  int sign;
+
+  Number_t x;
+  Number_t y;
+
+  Event_point_2 (int index,
+                 int sign,
+                 const Number_t& x,
+                 const Number_t& y)
+    : index(index)
+    , sign(sign)
+    , x(x)
+    , y(y)
+    { }
 
   /**
    *  Compare two event points by angle in `[0, 2*pi)`
    */
   inline bool operator< ( const Event_point_2<Number_t>& other ) const {
-    return compare_by_angle<Event_point_2<value_type> > (*this, other);
+    return compare_by_angle(*this, other);
   }
 
 };
+
+template <typename H_in, typename H_out>
+inline
+typename std::enable_if<std::is_same<H_in, H_out>::value, H_out>::type
+convert_hyperplane_types_t (H_in& h_in) {
+  auto standardizer = standardize_vector(h_in.data());
+  assert( standardizer > 0 );
+  return h_in;
+}
+
+template <typename H_in, typename H_out>
+inline
+typename std::enable_if<!(std::is_same<H_in, H_out>::value), H_out>::type
+convert_hyperplane_types_t ( H_in& h_in) {
+  H_out h_out(h_in.combination());
+
+  const int d = h_in.data().size();
+
+  auto standardizer_in = standardize_vector(h_in.data());
+  assert( standardizer_in > 0 );
+
+  for ( int i = 0; i < d; ++i ) {
+    h_out.data(i) = static_cast<typename H_out::Number_t>(h_in.data(i));
+  }
+
+  auto standardizer_out = standardize_vector(h_out.data());
+  assert( standardizer_out > 0 );
+
+  return h_out;
+}
 
 /**
  * @brief Handle the last step of the zonotope H-rep. construction (the planar view)
@@ -52,19 +86,20 @@ template <typename Zonotope_data_t,
 inline void handle_event_points (
   const Zonotope_data_t& z,
   const Combination_kernel_container<Zonotope_data_t, Kernel_number_t>& c,
-   Output_functor_t& outfn )
+  Output_functor_t& outfn )
 {
-  typedef typename Output_functor_t::value_type Hyperplane_t;
-  
+  typedef typename Output_functor_t::value_type Output_hyperplane_t;
+  typedef typename Output_hyperplane_t::Number_t Output_number_t;
+  typedef Hyperplane<Zonotope_data_t::Dimension_at_compile_time, Kernel_number_t> Hyperplane_t;
   typedef Event_point_2<Kernel_number_t> EP;
-  
+
   const int n = z.num_generators;
   const int d = z.dimension;
 
   // A vector that projects to the inequality offset
+  typedef Col_vector<Kernel_number_t, Zonotope_data_t::Dimension_at_compile_time>  Offset_vector_t;
+  Offset_vector_t offset_vector (Offset_vector_t::Zero(d,1));
 
-  typename Hyperplane_t::Vector_t offset_vector (d);
-  
   // The event points in the plane spanned by c.kernel[0], c.kernel[1]
   std::vector<EP> event_points;
 
@@ -84,9 +119,9 @@ inline void handle_event_points (
     }
 
     // i is in the complementary c
-    const auto& v = z.generators(c.kernel[0][0])[i];
-    const auto x = dot( c.kernel[0], v );
-    const auto y = dot( c.kernel[1], v );
+    const auto& v = z.generators_uniform(c.kernel(0,0)).col(i);
+    const auto x = c.kernel.col(0).dot(v);
+    const auto y = c.kernel.col(1).dot(v);
 
     if ( x != 0 || y != 0 ) {
       // i corresponds to a nontrivial event
@@ -95,10 +130,7 @@ inline void handle_event_points (
 
       if ( y < 0 || ( y == 0 && x < 0 ) ) {
         // v = generators[i] is below the x-axis
-        for ( int r = 0; r < d; ++r ) {
-          // TODO: Use same type as Hyperplane_t
-          offset_vector[r] += z.generators(offset_vector[r])[i][r];
-        }
+        offset_vector += z.generators_uniform(offset_vector(0)).col(i);
       }
     }
   }
@@ -110,41 +142,28 @@ inline void handle_event_points (
   // Rotate a halfplane in counterclockwise order round the origin
   // The initial halfplane is everything below the x-axis, and offset_vector
   // is the sum of those generators.
+
+  auto current_elements (c.elements);
+
   for ( const auto& event : event_points ) {
-    int i = event.generator_index;
-    
-    for ( int r = 0; r < d; ++r ) {
-      offset_vector[r] += event.sign * z.generators(offset_vector[r])[i][r];
-    }
+    int i = event.index;
+
+    offset_vector += event.sign * z.generators_uniform(offset_vector(0)).col(i);
+
     if ( i > c.elements.back() ) {
-      // TODO: Identify where to 
-      
-      Hyperplane_t h (d);
+      current_elements.push_back(i);
 
-      for ( int r = 0; r < d; ++r ) {
-        Kernel_number_t tmp = -event.y * c.kernel[0][r] + event.x * c.kernel[1][r];
-        h.normal[r] = static_cast<typename Hyperplane_t::Number_t>(tmp);
-      }
+      Hyperplane_t h (current_elements);
+      h.normal = -event.y * c.kernel.col(0) + event.x * c.kernel.col(1);
+      h.offset() = -h.normal.dot(offset_vector);
 
-      h.offset = -dot(h.normal, offset_vector);
+      outfn(convert_hyperplane_types_t<Hyperplane_t, Output_hyperplane_t>(h));
 
-      // standardize the representation
-      if ( h.offset > 0 ) {
-        for ( int r = 0; r < d; ++r ) {
-          h.normal[r] /= h.offset;
-        }
-      } else if ( h.offset < 0 ) {
-        for ( int r = 0; r < d; ++r ) {
-          h.normal[r] /= -h.offset;
-        }
-        h.offset = -1;
-      }
-      
-      outfn(h);
+      current_elements.pop_back();
     }
   }
 }
 
 } // namespace zonotope
 
-#endif // EVENT_POINT_2_HPP_
+#endif // ZONOTOPE_EVENT_POINT_2_HPP_

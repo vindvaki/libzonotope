@@ -1,77 +1,113 @@
-#ifndef HYPERPLANE_HPP_
-#define HYPERPLANE_HPP_
+#ifndef ZONOTOPE_HYPERPLANE_HPP_
+#define ZONOTOPE_HYPERPLANE_HPP_
 
+#include "eigen_utils.hpp"
 #include "type_casting_functor.hpp"
 
 #include <vector>
+#include <limits>
 
 namespace zonotope {
 
 /**
- * Represents a "hyperplane pair" `(normal, offset)`, where `normal` is
- * a vector and `offset` is a number. It is a utility class with
- * various uses. It could for example, be used to (conceptually)
- * represent the set
- *
- *   { x : dot(normal, x) + offset >= 0 },
- *
- * and if the user enforces some fixed dimension and the condition
- * `(offset==1)`, then we have a one-to-one representation of halfspaces
- * in the given dimension.
+ * Wraps a vector of d+1 elements to represent a hyperplane in d-space
  */
-template <typename Vector_t_>
-struct Hyperplane {
+template <int D, typename Number_t_>
+class Hyperplane {
 
-  typedef Vector_t_ Vector_t;
-  typedef typename Vector_t::value_type Number_t;
+public:
+  enum { Data_dimension = (-1 * ( D == -1 )) + ((D+1) * ( D >= 0 )) };
+  typedef Number_t_ Number_t;
+  typedef Col_vector<Number_t, Data_dimension> Data_vector_t;
 
-  typedef typename Vector_t::size_type size_type;
-  
-  Number_t offset;
-  Vector_t normal;
 
-  /**
-   * @brief Construct a hyperplane from a given offset and normal
-   *
-   * __Note:__ It is the responsibility of the user to ensure the
-   * hyperplanes are in some standard format, if such is desired.
-   * Without a standard format, the built in comparison operators are
-   * of limited use.
-   *
-   * For example:
-   *
-   * - A standard format for equivalence up to a positive constant
-   *   multiple can represent halfspaces with orientation.
-   *
-   * - A standard format for equivalence up to any constant multiple
-   *   can represent hyperplane equations.
-   */
+private:
+  enum { Eigen_needs_to_align = (sizeof(Data_vector_t)%16 == 0) };
+  Data_vector_t data_;
+  std::vector<int> combination_;
 
-  Hyperplane( const size_type d )
-    : offset ( 0 )
-    , normal ( Vector_t(d) )
-    {}
+public:
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(Eigen_needs_to_align)
 
-  /**
-   * This hyperplane type doesn't store the combination. 
-   */
+  Number_t& offset() const {
+    return const_cast<Number_t&>(data_(0));
+  }
+
+  Eigen::Block<Data_vector_t, D, 1> normal;
+
+  Data_vector_t& data() const {
+    return const_cast<Data_vector_t&>(data_);
+  }
+
+  Number_t& data(const int i) const {
+    return const_cast<Number_t&>(data_(i));
+  }
+
+  std::vector<int>& combination() const {
+    return const_cast<std::vector<int>&>(combination_);
+  }
+
+  int dimension() const {
+    return size()-1;
+  }
+
+  int size() const {
+    return data_.size();
+  }
+
   Hyperplane( const std::vector<int>& combination )
-    : Hyperplane(combination.size() + 1)
-    { }
+    : data_( Data_vector_t::Zero( combination.size() + 2, 1 ) )
+    , combination_( combination )
+    , normal( Eigen::Block<Data_vector_t, D, 1> (data_, 1, 0, dimension(), 1) )
+  { }
 
   /**
-   * @brief Compare two hyperplanes lexicographically
+   * @brief Compare two hyperplanes lexicographically, first by their data and,
+   *        in case of equal data, compare them by their underlying combinations.
    */
-  bool operator< ( const Hyperplane& other ) const {
-    if ( offset < other.offset ) {
-      return true;
-    }
 
-    if ( ( offset == other.offset ) && ( normal < other.normal ) ) {
+  bool compare_by_data_first( const Hyperplane& other ) const {
+    for ( int i = 0; i < size(); ++i ) {
+      // Loop invariant: data(0..i-1) == other.data(0..i-1)
+
+      if ( data(i) < other.data(i) ) {
+        return true;
+      }
+      if ( data(i) > other.data(i) ) {
+        return false;
+      }
+    }
+    // data() == other.data()
+
+    return combination() < other.combination();
+  }
+
+  bool compare_by_combination_first( const Hyperplane& other ) const {
+    if ( combination() < other.combination() ) {
       return true;
     }
+    if ( combination() > other.combination() ) {
+      return false;
+    }
+    // combination() == other.combination()
+
+    for ( int i = 0; i < size(); ++i ) {
+      // Loop invariant: data(0..i-1) == other.data(0..i-1)
+
+      if ( data(i) < other.data(i) ) {
+        return true;
+      }
+      if ( data(i) > other.data(i) ) {
+        return false;
+      }
+    }
+    // data() == other.data()
 
     return false;
+  }
+
+  bool operator< ( const Hyperplane& other ) const {
+    return compare_by_data_first(other);
   }
 
   /**
@@ -81,49 +117,10 @@ struct Hyperplane {
    * same dimensions and the same cartesian coordinates.
    */
   bool operator== ( const Hyperplane& other ) const {
-    return (offset == other.offset) && (normal == other.normal);
+    return data == other.data();
   }
-
-  size_type dimension() const {
-    return normal.size();
-  }
-
-};
-
-
-template <typename Vector_t_>
-struct Hyperplane_and_combination {
-
-  typedef Vector_t_ Vector_t;
-  typedef typename Vector_t::value_type Number_t;
-
-  typedef typename Vector_t::size_type size_type;
-  
-  Number_t offset;
-  Vector_t normal;
-
-  std::vector<int> combination;
-
-  Hyperplane_and_combination( const std::vector<int>& combination )
-    : offset ( 0 )
-    , normal ( Vector_t( combination.size()+1 ) )
-    , combination( combination )
-    { }
-
-  bool operator< ( const Hyperplane_and_combination& other ) const {
-    return combination < other.combination;
-  }
-
-  bool operator== ( const Hyperplane_and_combination& other ) const {
-    return combination == other.combination;
-  }
-
-  size_type dimension() const {
-    return normal.size();
-  }
-
 };
 
 } // namespace zonotope
 
-#endif // HYPERPLANE_HPP_
+#endif // ZONOTOPE_HYPERPLANE_HPP_

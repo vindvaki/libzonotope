@@ -1,31 +1,37 @@
+#include "zonotope.hpp"
 #include "zonotope_volume.hpp"
-#include "type_casting_functor.hpp"
 #include "test_utils.hpp"
-
 
 #include <gmpxx.h>
 #include <iostream>
 
-
-#include <cstdlib>
-
 int main(int argc, char** argv) {
   using namespace std;
+  using namespace zonotope;
   
-  const int d = atol(argv[1]);
-  const int n = atol(argv[2]);
+  assert(argc == 2);
 
-  zonotope::Type_casting_functor<vector<vector<long> >, vector<vector<mpz_class> > > cast;
+  const int d = 6; 
+  const int n = atol(argv[1]);
 
-  vector<vector<long> > generators_long = random_generators(d, n, -100L, 100L, 0L);
-  vector<vector<mpz_class> > generators_mpz = cast(generators_long);
+  typedef mpz_int      ZZ;
+  typedef mpq_rational QQ;
+  typedef double       FF;
 
-  mpz_class volume = zonotope::zonotope_volume<mpz_class> (generators_mpz);
-  long volume_long = zonotope::zonotope_volume (generators_long);
+  typedef Zonotope_data<d, ZZ, QQ, FF> Zonotope_data_t;
+
+  vector<double> values = random_buffer(d*n, -1.0, 1.0, 0L);
+
+  Zonotope_data_t z (n, &(values[0]));
+
+  auto volume_dd = zonotope_volume<double, FF> (z);
+  auto volume_zz = zonotope_volume<double, ZZ> (z);
+
   cout << "n = " << n << "\n"
        << "d = " << d << "\n"
-       << "volume_gmpz = " << volume << "\n"
-       << "volume_long = " << volume_long << "\n\n";
+       << "volume_dd = " << volume_dd << "\n"
+       << "volume_zz = " << volume_zz << "\n"
+       << "abs(volume_zz - volume_dd) = " << std::abs(volume_zz - volume_dd) << "\n";
  
   return 0;
 }

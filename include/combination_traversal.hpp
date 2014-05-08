@@ -40,7 +40,7 @@ void traverse_combinations (
         i < current_combination.next_elements_end();
         ++i )
   {
-    Combination_container child_combination( current_combination );
+    Combination_container child_combination = current_combination;
     child_combination.extend(i);
     if ( child_combination.is_valid() ) {
       traverse_combinations(child_combination, output);

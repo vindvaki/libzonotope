@@ -1,7 +1,10 @@
 #ifndef UPDATE_INVERSE_HPP_
 #define UPDATE_INVERSE_HPP_
 
-#include "linalg.hpp"
+#include "eigen_utils.hpp"
+#include <tuple>
+
+namespace zonotope {
 
 /**
  *
@@ -22,23 +25,20 @@
  *       [combination, next_element].
  *
  */
-template <typename NT, typename Vector_t>
-void update_inverse( const std::vector<int>& combination,
-                     const Vector_t& x,
-                     std::vector<Vector_t>& inverse,
-                     NT& determinant) {
+template <typename Number_t, 
+          typename Derived_vector,
+          typename Derived_inverse>
+std::tuple< Number_t, Derived_matrix<Derived_inverse> >
+update_inverse(const int k,
+               const typename Eigen::MatrixBase<Derived_vector>& next_column,
+               const typename Eigen::MatrixBase<Derived_inverse>& inverse_in,
+               const Number_t& determinant_in) 
+{
 
-  const int k = combination.size();
-  const int d = inverse.size();
+  const int d = inverse_in.rows();
 
   // init lambda
-  Vector_t lambda (d);
-  for ( int i = 0; i < d; ++i ) {
-    lambda[i] = 0;
-    for ( int j = 0; j < d; ++j ) {
-      lambda[i] += inverse[i][j] * x[j];
-    }
-  }
+  Derived_col_vector<Derived_inverse> lambda = inverse_in * next_column;
 
   // pivot
   int pivot_row = -1;
@@ -51,32 +51,30 @@ void update_inverse( const std::vector<int>& combination,
 
   if ( pivot_row == -1 ) {
     // adding x makes the vector combination singular
-    determinant = 0;
-    return;
-  }
-
-  if ( k != pivot_row ) {
-    std::swap( lambda[pivot_row], lambda[k] );
-    std::swap( inverse[pivot_row], inverse[k] );
+    return std::make_tuple(Number_t(0), inverse_in);
   }
 
   // update the inverse
+  Derived_matrix<Derived_inverse> inverse_out = inverse_in;
+
+  if ( k != pivot_row ) {
+    std::swap( lambda(pivot_row), lambda(k) );
+    inverse_out.row(pivot_row).swap(inverse_out.row(k));
+  }
+
   for ( int i = 0; i < d; ++i ) {
-    for ( int j = 0; j < d; ++j ) {
-      if ( i != k ) {
-        inverse[i][j] *= lambda[k];
-        inverse[i][j] -= lambda[i] * inverse[k][j];
-        inverse[i][j] /= determinant;
-      }
+    if ( i != k ) {
+      inverse_out.row(i) = ((lambda(k) * inverse_out.row(i)) - (lambda(i) * inverse_out.row(k))) / determinant_in;
     }
   }
 
   // update the determinant
-  determinant = lambda[k];
-
+  auto determinant_out = lambda(k);
   if ( k != pivot_row ) {
-    determinant *= -1;
+    determinant_out *= -1;
   }
+
+  return std::make_tuple(determinant_out, inverse_out);
 }
 
 } // namezpace zonotope
