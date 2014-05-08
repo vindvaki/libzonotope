@@ -9,10 +9,10 @@ namespace zonotope {
 struct Combination_base {
   typedef std::vector<int> Element_container;
   typedef Element_container::size_type size_type;
-  
+
   size_type MAX_SIZE;
   const int MAX_ELEMENT;
-  
+
   /**
    * A sorted stack of up to MAX_SIZE integers in 0..MAX_ELEMENT-1, that
    * can still be extended to include MAX_SIZE integers.
@@ -72,7 +72,11 @@ struct Combination_base {
   }
 
   int next_elements_end() const {
-    return (MAX_ELEMENT - (MAX_SIZE - size()) + 1);
+    // At most we can have MAX_SIZE elements.  No element can be larger than
+    // MAX_ELEMENTS.  (MAX_SIZE - size()) is the number of elements we must
+    // still add.  Thus, MAX_ELEMENT - (MAX_SIZE - size()) is the largest
+    // element that we can add while still being able to reach MAX_SIZE
+    return MAX_ELEMENT - (MAX_SIZE - size()) + 1;
   }
 };
 
