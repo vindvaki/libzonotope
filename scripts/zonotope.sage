@@ -19,6 +19,13 @@ def zonotope_from_vectors(V):
     """
     return zonotope_from_segments(segments_from_origin(V))
 
+def zonotope_volume(V):
+    """
+    Returns the volume of the zonotope with generators ``V``.
+    """
+    n, d = V.dimensions()
+    return sum(abs(Matrix(U).det()) for U in Combinations(V, d))
+
 def segments_from_origin(V):
     """
     Convert an ``n-by-d`` matrix ``V`` to an iterator of segments of
